@@ -1,0 +1,12 @@
+.vs/
+*.vcxproj
+*.filters
+*.user
+*.sln
+obj/
+x64/
+Debug/
+Release/
+*.xcodeproj
+*.xcconfig
+*.app

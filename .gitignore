@@ -10,3 +10,5 @@ Release/
 *.xcodeproj
 *.xcconfig
 *.app
+*.ilk 
+*.pdb

@@ -3,8 +3,9 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	stateMachine.addState<SceneA>();
+	stateMachine.getSharedData().postEffect.setup();
 
+	stateMachine.addState<SceneA>();
 	stateMachine.changeState("SceneA");
 
 	ofSetFrameRate(60);

@@ -53,9 +53,10 @@ void SceneA::update() {
 		spawnVelZ[i] *= 0.99;
 		spawnP[i].z += spawnVelZ[i];
 	}
-}
 
-void SceneA::draw() {
+	// posteffect
+	getSharedData().postEffect.bloom.begin();
+
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
@@ -85,6 +86,12 @@ void SceneA::draw() {
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
+
+	getSharedData().postEffect.bloom.end();
+}
+
+void SceneA::draw() {
+	getSharedData().postEffect.bloom.draw(0, 0);
 }
 
 string SceneA::getName() {

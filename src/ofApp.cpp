@@ -2,20 +2,10 @@
 #include "SceneA.h"
 #include "SceneB.h"
 #include "SceneC.h"
+#include "SceneD.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	stateMachine.getSharedData().gui.setup();
-	stateMachine.getSharedData().gui.setPosition(10, 10);
-	stateMachine.getSharedData().gui.add(isBloom.setup("Bloom", false));
-	stateMachine.getSharedData().gui.add(isEdge.setup("Edge", false));
-	stateMachine.getSharedData().gui.add(isDof.setup("Dof", false));
-	stateMachine.getSharedData().gui.add(isNoiseWarp.setup("NoiseWarp", false));
-	stateMachine.getSharedData().gui.add(isPixelate.setup("Pixelate", false));
-	stateMachine.getSharedData().gui.add(isRGBShift.setup("RGBShift", false));
-	stateMachine.getSharedData().gui.add(isSSAO.setup("SSAO", false));
-	stateMachine.getSharedData().gui.add(isZoomBlur.setup("ZoomBlur", false));
-	stateMachine.getSharedData().gui.add(isGodray.setup("Godray", false));
 	
 	stateMachine.getSharedData().post.init(ofGetWidth(), ofGetHeight());
 	stateMachine.getSharedData().post.setFlip(false);
@@ -32,6 +22,7 @@ void ofApp::setup() {
 	stateMachine.addState<SceneA>();
 	stateMachine.addState<SceneB>();
 	stateMachine.addState<SceneC>();
+	stateMachine.addState<SceneD>();
 	stateMachine.changeState("SceneA");
 
 	ofSetFrameRate(60);
@@ -39,11 +30,20 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	for (int i = 0; i < stateMachine.getSharedData().gui.getControlNames().size(); i++) {
-	 	 stateMachine.getSharedData().post[i]->setEnabled(stateMachine.getSharedData().gui.getToggle(stateMachine.getSharedData().gui.getControlNames()[i]));
-	}
 	stateMachine.getSharedData().time = ofGetElapsedTimef();
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
+
+	stateMachine.getSharedData().post[0]->setEnabled(sub->isBloom);
+	stateMachine.getSharedData().post[1]->setEnabled(sub->isEdge);
+	stateMachine.getSharedData().post[2]->setEnabled(sub->isDof);
+	stateMachine.getSharedData().post[3]->setEnabled(sub->isNoiseWarp);
+	stateMachine.getSharedData().post[4]->setEnabled(sub->isPixelate);
+	stateMachine.getSharedData().post[5]->setEnabled(sub->isRGBShift);
+	stateMachine.getSharedData().post[6]->setEnabled(sub->isSSAO);
+	stateMachine.getSharedData().post[7]->setEnabled(sub->isZoomBlur);
+	stateMachine.getSharedData().post[8]->setEnabled(sub->isGodray);
+
+	sub->fbo.getTexture() = stateMachine.getSharedData().post.getProcessedTextureReference();
 }
 
 //--------------------------------------------------------------
@@ -54,16 +54,18 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	switch (key) {
+		// Scene changing
 	case '1':
-		cout << "1" << endl;
 		stateMachine.changeState("SceneA");
 		break;
 	case '2':
-		cout << "2" << endl;
 		stateMachine.changeState("SceneB");
 		break;
 	case '3':
 		stateMachine.changeState("SceneC");
+		break;
+	case '4':
+		stateMachine.changeState("SceneD");
 		break;
 	}
 }

@@ -9,7 +9,6 @@ public:
 	void update();
 	void draw();
 	string getName();
-
 private:
 	ofVboMesh sphere;
 	vector<ofVec3f> points;

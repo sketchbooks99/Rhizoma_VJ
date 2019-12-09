@@ -38,7 +38,7 @@ void SceneA::setup() {
 
 void SceneA::update() {
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
-	time = ofGetElapsedTimef();
+	time = getSharedData().time;
 
 	for (int i = 0; i < planeMesh.getVertices().size(); i++) {
 		ofVec3f pos = planeMesh.getVertex(i);
@@ -54,10 +54,8 @@ void SceneA::update() {
 		spawnP[i].z += spawnVelZ[i];
 	}
 
-	// posteffect
-	getSharedData().postEffect.bloom.begin();
+	getSharedData().post.begin(cam);
 
-	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
 	ofPushMatrix();
@@ -85,13 +83,13 @@ void SceneA::update() {
 	ofPopMatrix;
 
 	glDisable(GL_DEPTH_TEST);
-	cam.end();
 
-	getSharedData().postEffect.bloom.end();
+	getSharedData().post.end();
 }
 
 void SceneA::draw() {
-	getSharedData().postEffect.bloom.draw(0, 0);
+	getSharedData().post.draw(0, 0);
+	getSharedData().gui.draw();
 }
 
 string SceneA::getName() {

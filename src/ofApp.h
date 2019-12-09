@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include "ofxStateMachine.h"
 #include "SharedData.h"
-#include "ofxSimpleBlur.h"
+#include "ofxPostProcessing.h"
 #include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
@@ -26,5 +26,6 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 		itg::ofxStateMachine<SharedData> stateMachine; 
-
+		//ofxPanel gui;
+		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isSSAO, isRimHighlight, isZoomBlur;
 };

@@ -12,3 +12,4 @@ Release/
 *.app
 *.ilk 
 *.pdb
+*.ipch

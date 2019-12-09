@@ -4,8 +4,18 @@
 #include "SharedData.h"
 
 class SceneB : public itg::ofxState<SharedData> {
+public:
 	void setup();
 	void update();
 	void draw();
 	string getName();
+
+private:
+	ofVboMesh sphere;
+	vector<ofVec3f> points;
+	vector<ofVboMesh> aroundSpheres;
+	ofEasyCam cam;
+	ofShader sphereShader;
+	ofVec3f lightDir;
+	float time;
 };

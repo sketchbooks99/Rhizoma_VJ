@@ -1,8 +1,11 @@
 #pragma once
 
-#include "PostEffect.h"
+#include "ofxPostProcessing.h"
+#include "ofxGui.h"
 
 class SharedData {
 public:
-	PostEffect postEffect;
+	ofxPostProcessing post;
+	ofxPanel gui;
+	float time;
 };

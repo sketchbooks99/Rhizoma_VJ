@@ -20,3 +20,13 @@ ofxStateMachineを用いて行う。
 StateMachine.getSharedData().postEffect.setup()
 ```
 みたいにする。(ofApp::setup()にて)
+
+# TODO
+- posteffectは全部fboに書き込んでからかける？
+- 毛座どりさんのを参考にしたやつ。角数が違う円をいっぱい書く。volumetric light、パーティクル
+- レイマーチングネタ
+- 円でかわいいやつ
+- 海
+- それぞれのシーンの親和性を高める。
+- Audio Reactive
+- ボタンでシーン制御できるように。

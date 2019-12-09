@@ -1,4 +1,4 @@
 ofxGui
 ofxOsc
-ofxSimpleBlur
+ofxPostProcessing1
 ofxStateMachine

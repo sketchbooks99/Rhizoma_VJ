@@ -37,7 +37,6 @@ void SceneA::setup() {
 }
 
 void SceneA::update() {
-	ofSetWindowTitle(ofToString(ofGetFrameRate()));
 	time = getSharedData().time;
 
 	for (int i = 0; i < planeMesh.getVertices().size(); i++) {

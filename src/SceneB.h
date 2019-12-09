@@ -18,4 +18,5 @@ private:
 	ofShader sphereShader;
 	ofVec3f lightDir;
 	float time;
+	ofFbo renderFbo;
 };

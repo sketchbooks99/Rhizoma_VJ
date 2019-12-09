@@ -1,6 +1,7 @@
 #include "ofApp.h"
 #include "SceneA.h"
 #include "SceneB.h"
+#include "SceneC.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -30,6 +31,7 @@ void ofApp::setup() {
 
 	stateMachine.addState<SceneA>();
 	stateMachine.addState<SceneB>();
+	stateMachine.addState<SceneC>();
 	stateMachine.changeState("SceneA");
 
 	ofSetFrameRate(60);
@@ -41,6 +43,7 @@ void ofApp::update(){
 	 	 stateMachine.getSharedData().post[i]->setEnabled(stateMachine.getSharedData().gui.getToggle(stateMachine.getSharedData().gui.getControlNames()[i]));
 	}
 	stateMachine.getSharedData().time = ofGetElapsedTimef();
+	ofSetWindowTitle(ofToString(ofGetFrameRate()));
 }
 
 //--------------------------------------------------------------
@@ -58,6 +61,9 @@ void ofApp::keyPressed(int key){
 	case '2':
 		cout << "2" << endl;
 		stateMachine.changeState("SceneB");
+		break;
+	case '3':
+		stateMachine.changeState("SceneC");
 		break;
 	}
 }

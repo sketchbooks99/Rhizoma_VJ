@@ -28,13 +28,22 @@ void SceneB::setup() {
 	}
 
 	sphereShader.load("shader/SceneB/sphere.vert", "shader/SceneB/sphere.frag");
+
+	ofFbo::Settings rs;
+	rs.width = ofGetWidth();
+	rs.height = ofGetHeight();
+	rs.useDepth = true;
+	rs.useStencil = true;
+	rs.depthStencilAsTexture = true;
+	renderFbo.allocate(rs);
 }
 
 void SceneB::update() {
 	time = getSharedData().time;
 	lightDir = ofVec3f(0.577, 0.577, -0.577);
 
-	getSharedData().post.begin();
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
@@ -77,6 +86,10 @@ void SceneB::update() {
 	ofPopMatrix();
 	cam.end();
 
+	renderFbo.end();
+
+	getSharedData().post.begin();
+	renderFbo.draw(0, 0);
 	getSharedData().post.end();
 }
 

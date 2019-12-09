@@ -2,6 +2,7 @@
 
 #include "ofxState.h"
 #include "SharedData.h"
+#include "ofxGui.h"
 
 class SceneA : public itg::ofxState<SharedData> {
 public:
@@ -41,8 +42,13 @@ private:
 			c.draw();
 		}
 	};
-	ofFbo renderFbo;
+
+	ofFbo renderFbo, occludeFbo, volumetricFbo;
 	ofEasyCam cam;
+	ofShader renderShader, volumetricShader;
+
+	ofxPanel gui;
+	ofParameter<float> density, weight, decay, exposure, screenY;
 
 	// circles
 	vector<Circle> circles;

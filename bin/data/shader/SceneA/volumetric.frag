@@ -25,6 +25,7 @@ void main() {
     deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;
     // Store Initial sample
     vec3 color = texture(occludeTex, texCoord).xyz;
+    float exposure = texture(occludeTex, texCoord).a;
     // Set up illumination decay factor
     float illuminationDecay = 0.5;
     // Evaluate summation

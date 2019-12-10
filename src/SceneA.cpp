@@ -8,6 +8,7 @@ void SceneA::setup() {
 	rs.useStencil = true;
 	rs.depthStencilAsTexture = true;
 	rs.textureTarget = GL_TEXTURE_2D;
+	rs.numSamples = 4;
 	renderFbo.allocate(rs);
 	occludeFbo.allocate(rs);
 	volumetricFbo.allocate(rs);
@@ -15,9 +16,11 @@ void SceneA::setup() {
 	for (unsigned int i = 0; i < 100; i++) {
 		unsigned int res = int(ofRandom(3, 20));
 		unsigned int size = int(ofRandom(100, 200));
-		ofVec3f pos = ofVec3f(ofRandom(-ofGetWidth(), ofGetWidth()), ofRandom(-ofGetWidth(), ofGetWidth()), 0);
-		bool isBright = i % 10 == 0 ? true : false;
-		ofColor color = ofColor(30, 200, 200, 100);
+		ofVec3f pos = ofVec3f(ofRandom(-ofGetWidth(), ofGetWidth()) * 1.5, ofRandom(-ofGetWidth(), ofGetWidth()) * 1.5, ofRandom(-30, 30));
+		//bool isBright = i % 10 == 0 ? true : false;
+		bool isBright = false;
+
+		ofColor color = ofColor(200, 255, 255, 64);
 		Circle circle = Circle(res, size, pos, color, isBright);
 		circles.push_back(circle);
 	}
@@ -28,22 +31,26 @@ void SceneA::setup() {
 
 	gui.setup();
 	gui.setPosition(10, 10);
-	gui.add(density.set("Density", 1.0, 0.0, 1.0));
+	gui.add(density.set("Density", 0.07, 0.0, 1.0));
 	gui.add(weight.set("Weight", 1.0, 0.0, 1.0));
-	gui.add(decay.set("decay", 1.0, 0.0, 1.0));
+	gui.add(decay.set("decay", 0.99, 0.0, 1.0));
 	gui.add(exposure.set("exposure", 1.0, 0.0, 1.0));
-	gui.add(screenY.set("ScreenY", -1.0, -10.0, 0.0));
+	gui.add(screenY.set("ScreenY", -10.0, -10.0, 0.0));
+
+	time = &getSharedData().time;
+	camPoses = { ofVec3f(0, -1000, 0), ofVec3f(sin(*time) * 3000, -500, cos(*time) * 3000) };
+	camIdx = 0;
 }
 
 void SceneA::update() {
-	float time = getSharedData().time;
-	/*float x = 3000 * sin(time);
-	float y = 500;
-	float z = 3000 * cos(time);*/
-	float x = 0;
-	float y = 500;
-	float z = 3000;
-	cam.setPosition(x, y, z);
+	time = &getSharedData().time;
+	/*float x = 3000 * sin(time * 0.2);
+	float y = -500;
+	float z = 3000 * cos(time * 0.2);*/
+	/*float x = 0;
+	float y = -500;
+	float z = 3000;*/
+	cam.setPosition(camPoses[camIdx]);
 	cam.lookAt(ofVec3f(0, 0, 0));
 
 	occludeFbo.begin();
@@ -56,7 +63,11 @@ void SceneA::update() {
 
 	renderShader.begin();
 	for(int i = 0; i < circles.size(); i++) {
-		renderShader.setUniform1i("isBright", circles[i].isBright);
+		if (circles[i].getIntensity() > 0.0f) circles[i].setIntensity(circles[i].getIntensity() - 0.01);
+		else if (circles[i].getIntensity() <= 0.0f) circles[i].setBright(false);
+		circles[i].update(*time);
+		renderShader.setUniform1f("intensity", circles[i].getIntensity());
+		renderShader.setUniform1i("isBright", circles[i].getBright());
 		circles[i].draw();
 	}
 	renderShader.end();
@@ -77,7 +88,7 @@ void SceneA::update() {
 	ofPushMatrix();
 	ofRotateXDeg(90);
 
-	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 	for (int i = 0; i < circles.size(); i++) {
 		circles[i].draw();
 	}
@@ -120,6 +131,33 @@ void SceneA::update() {
 void SceneA::draw() {
 	getSharedData().post.draw(0, 0);
 	gui.draw();
+}
+
+void SceneA::keyPressed(int key)  {
+	switch (key) {
+	case 'a':
+		for (int i = 0; i < 5; i++) {
+			Circle newCircle = spawnCircle(ofGetWidth() * 1.5, ofGetHeight() * 1.5, ofVec2f(100, 200), ofColor(200, 255, 255, 64), true);
+			newCircle.setIntensity(0.4f);
+			circles.push_back(newCircle);
+
+			circles.erase(circles.begin() + 1);
+		}
+	case 'b':
+		camIdx = (camIdx + 1) % camPoses.size();
+	}
+}
+
+
+
+Circle SceneA::spawnCircle(float xRange, float yRange, ofVec2f sizeRange, ofColor color, bool isBright = false) {
+	float x = ofRandom(-xRange, xRange);
+	float y = ofRandom(-yRange, yRange);
+	float z = ofRandom(-30, 30);
+	float size = ofRandom(sizeRange.x, sizeRange.y);
+	int res = ofRandom(3, 20);
+
+	return Circle(res, size, ofVec3f(x, y, z), color, isBright);
 }
 
 string SceneA::getName() {

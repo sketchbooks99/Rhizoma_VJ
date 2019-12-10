@@ -67,6 +67,9 @@ void ofApp::keyPressed(int key){
 	case '4':
 		stateMachine.changeState("SceneD");
 		break;
+	case 'f':
+		ofToggleFullscreen();
+		break;
 	}
 }
 

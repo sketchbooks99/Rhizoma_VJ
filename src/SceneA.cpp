@@ -32,8 +32,6 @@ void SceneA::setup() {
 	translate = ofVec3f(ofGetWidth() / 2, ofGetHeight() / 2, 0);
 
 	glPointSize(3.0f);
-
-
 }
 
 void SceneA::update() {
@@ -55,9 +53,9 @@ void SceneA::update() {
 	}
 
 	// posteffect
-	getSharedData().postEffect.bloom.begin();
+    getSharedData().postEffect.bloom.begin();
 
-	cam.begin();
+//    cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
 	ofPushMatrix();
@@ -82,12 +80,11 @@ void SceneA::update() {
 		ofDrawSphere(spawnP[i].x, spawnP[i].y, spawnP[i].z, 5);
 	}
 
-	ofPopMatrix;
+	ofPopMatrix();
 
 	glDisable(GL_DEPTH_TEST);
-	cam.end();
-
-	getSharedData().postEffect.bloom.end();
+//    cam.end();
+    getSharedData().postEffect.bloom.end();
 }
 
 void SceneA::draw() {

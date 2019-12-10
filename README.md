@@ -3,26 +3,24 @@
 # エフェクトについて
 ポストエフェクトをかける場合は、各シーンの描画内容に対して行うようにする。
 よっぽどのことがない限り、シーン全体に同じエフェクトをかける。
-`PostEffect`クラスで管理
+ofxPostProcessingで管理
 各シーンで必ず
 ```
-getSharedData().postEffect.getEffect("bloom").begin();
-
+fbo.begin();
 // draw scene
+fbo.end();
 
-getSharedData().postEffect.getEffect("bloom").end();
+getSharedData().post.begin();
+fbo.draw(0, 0);
+getSharedData().post.end();
 ```
 みたいにする。
 # シーン遷移について
 ofxStateMachineを用いて行う。
-シーン全体で共有のデータ`postEffect`などは
-```
-StateMachine.getSharedData().postEffect.setup()
-```
-みたいにする。(ofApp::setup()にて)
+シーン全体で共有のデータ`post`などにする
 
 # TODO
-- posteffectは全部fboに書き込んでからかける？
+- [x] posteffectは全部fboに書き込んでからかける？
 - 毛座どりさんのを参考にしたやつ。角数が違う円をいっぱい書く。volumetric light、パーティクル
 - レイマーチングネタ
 - 円でかわいいやつ

@@ -15,9 +15,9 @@ void ofApp::setup() {
 	stateMachine.getSharedData().post.createPass<NoiseWarpPass>()->setEnabled(isNoiseWarp);
 	stateMachine.getSharedData().post.createPass<PixelatePass>()->setEnabled(isPixelate);
 	stateMachine.getSharedData().post.createPass<RGBShiftPass>()->setEnabled(isRGBShift);
-	stateMachine.getSharedData().post.createPass<SSAOPass>()->setEnabled(isSSAO);
 	stateMachine.getSharedData().post.createPass<ZoomBlurPass>()->setEnabled(isZoomBlur);
 	stateMachine.getSharedData().post.createPass<GodRaysPass>()->setEnabled(isGodray);
+	stateMachine.getSharedData().post.createPass<Invert>()->setEnabled(isInvert);
 
 	stateMachine.addState<SceneA>();
 	stateMachine.addState<SceneB>();
@@ -25,7 +25,9 @@ void ofApp::setup() {
 	stateMachine.addState<SceneD>();
 	stateMachine.changeState("SceneA");
 
-	ofSetFrameRate(60);
+	//ofSetFrameRate(60);
+	ofSetVerticalSync(false);
+	ofEnableAntiAliasing();
 }
 
 //--------------------------------------------------------------
@@ -39,11 +41,12 @@ void ofApp::update(){
 	stateMachine.getSharedData().post[3]->setEnabled(sub->isNoiseWarp);
 	stateMachine.getSharedData().post[4]->setEnabled(sub->isPixelate);
 	stateMachine.getSharedData().post[5]->setEnabled(sub->isRGBShift);
-	stateMachine.getSharedData().post[6]->setEnabled(sub->isSSAO);
-	stateMachine.getSharedData().post[7]->setEnabled(sub->isZoomBlur);
-	stateMachine.getSharedData().post[8]->setEnabled(sub->isGodray);
+	stateMachine.getSharedData().post[6]->setEnabled(sub->isZoomBlur);
+	stateMachine.getSharedData().post[7]->setEnabled(sub->isGodray);
+	stateMachine.getSharedData().post[8]->setEnabled(sub->isInvert);
 
 	sub->fbo.getTexture() = stateMachine.getSharedData().post.getProcessedTextureReference();
+	sub->fps = ofGetFrameRate();
 }
 
 //--------------------------------------------------------------
@@ -67,7 +70,7 @@ void ofApp::keyPressed(int key){
 	case '4':
 		stateMachine.changeState("SceneD");
 		break;
-	case 'f':
+	case ' ':
 		ofToggleFullscreen();
 		break;
 	}

@@ -6,9 +6,9 @@
 int main( ){
 	ofGLFWWindowSettings s;
 
-	s.numSamples = 4;
+	s.numSamples = 16;
 
-	s.setGLVersion(4, 1);
+	s.setGLVersion(4, 5);
 	s.setSize(1080, 720);
 	s.setPosition(ofVec2f(0, 0));
 	s.resizable = false;

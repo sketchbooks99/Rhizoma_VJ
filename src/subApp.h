@@ -10,8 +10,9 @@ public:
 	void draw();
 	void keyPressed(int key);
 	ofxPanel gui;
-	ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isSSAO, isRimHighlight, isZoomBlur;
+	ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert;
 
 	ofFbo fbo;
+	float fps;
 	//shared_ptr<ofApp> mainApp;
 };

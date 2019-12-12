@@ -7,5 +7,6 @@ class SharedData {
 public:
 	ofxPostProcessing post;
 	ofxPanel gui;
-	float time;
+	float time, fps;
+
 };

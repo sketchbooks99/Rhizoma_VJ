@@ -26,7 +26,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 		itg::ofxStateMachine<SharedData> stateMachine; 
-		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isSSAO, isRimHighlight, isZoomBlur;
+		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert;
 
 		shared_ptr<subApp> sub;
 };

@@ -54,11 +54,5 @@ void subApp::keyPressed(int key) {
 	case 'o':
 		isInvert = !isInvert;
 		break;
-		
-	// Scene Change
-	case '1':
-	case '2':
-	case '3':
-	case '4':
 	}
 }

@@ -24,11 +24,12 @@ private:
 	ofFbo renderFbo;
 
 	// boid
-	ofVboMesh piramid;
+	ofVboMesh piramid, box;
 	ofShader integrate, forceCompute, instancingShader;
 	ofTexture posTex, velTex, forceTex;
 	ofBufferObject forceBuffer, dataBuffer;
 	vector<Boids> boids;
+	int numFish, texRes;
 
 	// Gui & Paramters
 	ofxPanel gui;

@@ -2,20 +2,20 @@
 
 const int BLOCK_SIZE = 1024;
 
-layout(rgba8, binding=0) uniform image2D posTex;
-layout(rgba8, binding=1) uniform image2D velTex;
-layout(rgba8, binding=2) uniform image2D forceTex;
+layout(rgba32f, binding=0) uniform image2D posTex;
+layout(rgba32f, binding=1) uniform image2D velTex;
+layout(rgba32f, binding=2) uniform image2D forceTex;
 
 struct Boids {
     vec3 pos;
     vec3 vel;
 };
 
-layout(std140, binding=0) buffer force {
+layout(std430, binding=0) buffer force {
     vec3 f[];
 };
 
-layout(std140, binding=1) buffer boids {
+layout(std430, binding=1) buffer boids {
     Boids b[];
 };
 
@@ -50,18 +50,18 @@ vec3 avoidWall(vec3 pos) {
     vec3 acc = vec3(0.0);
     // x
     acc.x = (pos.x < wc.x - ws.x * 0.5) ? acc.x + 1.0 : acc.x;
-    acc.x = (pos.x < wc.x + ws.x * 0.5) ? acc.x - 1.0 : acc.x;
+    acc.x = (pos.x > wc.x + ws.x * 0.5) ? acc.x - 1.0 : acc.x;
     // y
     acc.y = (pos.y < wc.y - ws.y * 0.5) ? acc.y + 1.0 : acc.y;
-    acc.y = (pos.y < wc.y + ws.y * 0.5) ? acc.y - 1.0 : acc.y;
+    acc.y = (pos.y > wc.y + ws.y * 0.5) ? acc.y - 1.0 : acc.y;
     // z
     acc.z = (pos.z < wc.z - ws.z * 0.5) ? acc.z + 1.0 : acc.z;
-    acc.z = (pos.z < wc.z + ws.z * 0.5) ? acc.z - 1.0 : acc.z;
+    acc.z = (pos.z > wc.z + ws.z * 0.5) ? acc.z - 1.0 : acc.z;
 
     return acc;
 }
 
-layout(local_size_x  = BLOCK_SIZE, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = BLOCK_SIZE, local_size_y = 1, local_size_z = 1) in;
 void main() {
     uint id = gl_GlobalInvocationID.x;
     Boids boid = b[id];

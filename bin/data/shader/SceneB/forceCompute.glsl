@@ -1,21 +1,21 @@
 #version 440
 
-const int BLOCK_SIZE = 1024;
+layout(rgba32f, binding=0) uniform image2D posTex;
+layout(rgba32f, binding=1) uniform image2D velTex;
+layout(rgba32f, binding=2) uniform image2D forceTex;
 
-layout(rgba8, binding=0) uniform image2D posTex;
-layout(rgba8, binding=1) uniform image2D velTex;
-layout(rgba8, binding=2) uniform image2D forceTex;
+const int BLOCK_SIZE = 1024;
 
 struct Boids {
     vec3 pos;
     vec3 vel;
 };
 
-layout(std140, binding=0) buffer force {
+layout(std430, binding=0) buffer force {
     vec3 f[];
 };
 
-layout(std140, binding=1) buffer boids {
+layout(std430, binding=1) buffer boids {
     Boids b[];
 };
 
@@ -82,16 +82,16 @@ void main() {
     vec3 cohPosSum = vec3(0.0);
     int cohCount = 0;
 
-    uint gi = gl_LocalInvocationIndex;
+    uint gi = gl_LocalInvocationIndex.x;
     for(uint i = 0; i < uint(maxNum); i += BLOCK_SIZE) {
         boidData[gi] = b[i + gi];
 
         groupMemoryBarrier();
 
-        for(int i = 0; i < BLOCK_SIZE; i++) {
+        for(int j = 0; j < BLOCK_SIZE; j++) {
             // Position & Velocity of other boid
-            vec3 otherPos = b[i].pos;
-            vec3 otherVel = b[i].vel;
+            vec3 otherPos = boidData[j].pos;
+            vec3 otherVel = boidData[j].vel;
 
             // Distance of position between other boid
             vec3 diff = myPos - otherPos;
@@ -151,29 +151,6 @@ void main() {
     force += cohSteer * cohesionWeight;
     force += sepSteer * separateWeight;
 
-    force += avoidWall(myPos) * avoidWallWeight;
-
-    myVel += force * deltaTime;
-    myVel = limit(myVel, maxSpeed);
-    myPos += myVel * deltaTime;
-
-    imageStore(posTex, ivec2(gl_GlobalInvocationID.xy), vec4(myPos, 1.0));
-    imageStore(velTex, ivec2(gl_GlobalInvocationID.xy), vec4(myVel, 1.0));
-    Boids boid;
-    boid.pos = myPos;
-    boid.vel = myVel;
-    b[id] = boid;
-
-    // force += avoidWall(myPos) * avoidWallWeight;
-
-    // myVel += force * deltaTime;
-    // myVel = limit(myVel, maxSpeed);
-    // myVel += myVel * deltaTime;
-
-    // imageStore(posTex, ivec2(gl_GlobalInvocationID.xy), vec4(boid.pos, 1.0));
-    // imageStore(velTex, ivec2(gl_GlobalInvocationID.xy), vec4(boid.vel, 1.0));
-
     imageStore(forceTex, ivec2(gl_GlobalInvocationID.xy), vec4(force, 1.0));
-    // imageStore(forceTex, ivec2(gl_GlobalInvocationID.xy), vec4(1.0));
     f[id] = force;
 }

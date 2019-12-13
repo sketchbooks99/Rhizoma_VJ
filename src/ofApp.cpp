@@ -25,8 +25,8 @@ void ofApp::setup() {
 	stateMachine.addState<SceneD>();
 	stateMachine.changeState("SceneA");
 
-	//ofSetFrameRate(60);
-	ofSetVerticalSync(false);
+	ofSetFrameRate(60);
+	ofSetVerticalSync(true);
 	ofEnableAntiAliasing();
 }
 

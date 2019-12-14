@@ -26,6 +26,7 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.add(isGlitch.setup("Glitch", false));
 	stateMachine.getSharedData().gui.add(sound.set("Sound", 0, 0, 1));
 	stateMachine.getSharedData().gui.add(fps.set("fps", 60, 0, 60));
+	stateMachine.getSharedData().gui.add(isKicked.setup("isKick", false));
 
 	stateMachine.getSharedData().post.init(ofGetWidth(), ofGetHeight());
 	stateMachine.getSharedData().post.setFlip(false);
@@ -64,6 +65,10 @@ void ofApp::setup() {
 	soundStream.setup(settings);
 
 	stateMachine.getSharedData().volume = 0;
+
+	decayRate = 0.05;
+	minimumThreshold = 0.1;
+	kickThreshold = minimumThreshold;
 }
 
 //--------------------------------------------------------------
@@ -209,6 +214,16 @@ void ofApp::audioIn(ofSoundBuffer & input) {
 	}
 	curVol /= (float)numCounted;
 	curVol = sqrt(curVol);
+
+	kickThreshold = ofLerp(kickThreshold, minimumThreshold, decayRate);
+
+	if (curVol > kickThreshold) {
+		kickThreshold = curVol;
+		isKicked = true;
+	}
+	else {
+		isKicked = false;
+	}
 
 	/*smoothedVol *= 0.93;
 	smoothedVol += 0.07 * curVol;*/

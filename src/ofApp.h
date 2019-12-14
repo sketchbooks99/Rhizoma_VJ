@@ -30,10 +30,12 @@ class ofApp : public ofBaseApp{
 		itg::ofxStateMachine<SharedData> stateMachine; 
 		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert, isGlitch;
 		ofParameter<float> sound, fps;
+		ofxToggle isKicked;
 		ofxPanel gui;
 
 		ofSoundStream soundStream;
 		float smoothedVol;
+		float kickThreshold, minimumThreshold, decayRate;
 
 		shared_ptr<subApp> sub;
 };

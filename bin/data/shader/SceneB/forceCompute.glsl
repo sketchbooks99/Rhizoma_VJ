@@ -36,6 +36,9 @@ uniform float cohesionWeight;
 uniform vec3 center;
 uniform vec3 wallSize;
 uniform float avoidWallWeight;
+// Position of attractor
+uniform vec3 attractorPos;
+uniform float attractWeight;
 
 // limiting vector size
 vec3 limit(vec3 vec, float max) {
@@ -50,13 +53,13 @@ vec3 avoidWall(vec3 pos) {
     vec3 acc = vec3(0.0);
     // x
     acc.x = (pos.x < wc.x - ws.x * 0.5) ? acc.x + 1.0 : acc.x;
-    acc.x = (pos.x < wc.x + ws.x * 0.5) ? acc.x - 1.0 : acc.x;
+    acc.x = (pos.x > wc.x + ws.x * 0.5) ? acc.x - 1.0 : acc.x;
     // y
     acc.y = (pos.y < wc.y - ws.y * 0.5) ? acc.y + 1.0 : acc.y;
-    acc.y = (pos.y < wc.y + ws.y * 0.5) ? acc.y - 1.0 : acc.y;
+    acc.y = (pos.y > wc.y + ws.y * 0.5) ? acc.y - 1.0 : acc.y;
     // z
     acc.z = (pos.z < wc.z - ws.z * 0.5) ? acc.z + 1.0 : acc.z;
-    acc.z = (pos.z < wc.z + ws.z * 0.5) ? acc.z - 1.0 : acc.z;
+    acc.z = (pos.z > wc.z + ws.z * 0.5) ? acc.z - 1.0 : acc.z;
 
     return acc;
 }
@@ -98,7 +101,7 @@ void main() {
             float dist = sqrt(dot(diff, diff));
             
             // Separation
-            if (dist > 0.0 && dist <= separateRadius) {
+            if (id != (i + gi) && dist <= separateRadius) {
                 vec3 repulse = normalize(myPos - otherPos);
                 repulse /= dist;
                 sepPosSum += repulse;
@@ -106,13 +109,14 @@ void main() {
             }
 
             // Alignment
-            if (dist > 0.0 && dist <= alignmentRadius) {
+            if (id != (i + gi) && dist <= alignmentRadius) {
                 aliVelSum += otherVel;
                 aliCount++;
             }
 
             // Cohesion
-            if (dist > 0.0 && dist <= cohesionRadius) {
+            // if (dist > 0.0) => if (id != i + gi)
+            if (id != (i + gi) && dist <= cohesionRadius) {
                 cohPosSum += otherPos;
                 cohCount++;
             }
@@ -150,6 +154,11 @@ void main() {
     force += aliSteer * alignmentWeight;
     force += cohSteer * cohesionWeight;
     force += sepSteer * separateWeight;
+
+    vec3 dir = attractorPos - myPos;
+    force += normalize(dir) * attractWeight;
+
+    force += avoidWall(myPos) * avoidWallWeight;
 
     imageStore(forceTex, ivec2(gl_GlobalInvocationID.xy), vec4(force, 1.0));
     f[id] = force;

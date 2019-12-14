@@ -9,6 +9,7 @@ public:
 	void setup();
 	void update();
 	void draw();
+	void keyPressed(int key);
 	ofVboMesh createPiramid(float scale);
 	string getName();
 
@@ -30,12 +31,17 @@ private:
 	ofBufferObject forceBuffer, dataBuffer;
 	vector<Boids> boids;
 	int numFish, texRes;
+	vector<ofVec3f> attractorPoses;
+	unsigned int attIdx;
+	ofVec3f wallSize;
+	ofSpherePrimitive attractor;
 
 	// Gui & Paramters
 	ofxPanel gui;
 	ofParameter<float> separateRadius, alignmentRadius, cohesionRadius;
 	ofParameter<float> separateWeight, alignmentWeight, cohesionWeight;
 	ofParameter<float> maxSpeed, maxForce, avoidWallWeight;
+	ofParameter<float> attractWeight;
 	ofParameter<float> fps;
 	ofParameterGroup shaderUniforms;
 };

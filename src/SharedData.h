@@ -29,7 +29,15 @@ public:
 class SharedData {
 public:
 	ofxPostProcessing post;
+	ofFbo fbo;
 	ofxPanel gui;
 	float time, fps;
 
+	// sound
+	float volume;
+	/*
+	float *fftSmoothed;
+	float *volume;
+	int nBandsToGet;
+	ofSoundPlayer sound;*/
 };

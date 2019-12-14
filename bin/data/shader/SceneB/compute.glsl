@@ -67,7 +67,7 @@ void main() {
     Boids boid = b[id];
     vec3 force = f[id];
 
-    force += avoidWall(boid.pos) * avoidWallWeight;
+    // force += avoidWall(boid.pos) * avoidWallWeight;
 
     boid.vel += force * deltaTime;
     boid.vel = limit(boid.vel, maxSpeed);

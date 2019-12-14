@@ -9,6 +9,26 @@ class SceneC : public itg::ofxState<SharedData> {
 	void draw();
 	string getName();
 
+	// Custom Functions
+	void createGBuffer();
+	void createRenderBuffer();
+
+	// Shaders & fbo
+	ofShader rayShader, postShader, lightingShader, gBufferShader, gRenderShader;
+	ofFbo renderFbo, gFbo;
+	ofVboMesh quad;
+
+	ofxPanel gui;
+	ofxToggle isNormal, isDepth, isPosition, isRender;
+	ofxToggle showTex;
+
+	// GPU Particles
+	int numParticles, textureRes;
+	//pingPongBuffer posPingPong, velPingPong;
+	ofShader compute, renderParticle;
+	ofVboMesh particle;
+	
+
 	int plWidth, plHeight;
 	ofVboMesh vboMesh, planeMesh;
 

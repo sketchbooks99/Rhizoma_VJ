@@ -11,6 +11,7 @@ void SceneA::setup() {
 	rs.textureTarget = GL_TEXTURE_2D;
 	rs.numSamples = 16;
 	renderFbo.allocate(rs);
+	normalFbo.allocate(rs);
 	occludeFbo.allocate(rs);
 	volumetricFbo.allocate(rs);
 
@@ -31,7 +32,7 @@ void SceneA::setup() {
 	volumetricShader.load("shader/SceneA/volumetric.vert", "shader/SceneA/volumetric.frag");
 
 	gui.setup();
-	gui.setPosition(10, 10);
+	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
 	gui.add(density.set("Density", 0.07, 0.0, 1.0));
 	gui.add(weight.set("Weight", 1.0, 0.0, 1.0));
 	gui.add(decay.set("decay", 0.97, 0.0, 1.0));
@@ -42,71 +43,33 @@ void SceneA::setup() {
 	camPoses = { ofVec3f(0, -2000, 0), ofVec3f(0, -1000, 2000) };
 	camIdx = 0;
 
-	sceneMode = 1;
+	sceneMode = 0;
 }
 
 // =========================================================================================
 void SceneA::update() {
 	time = getSharedData().time;
 
-	switch (sceneMode) {
-	case 0:
+	if (sceneMode == 0) {
 		scene1();
-		break;
-	case 1:
-		scene2();
-		break;
 	}
+	else if (sceneMode == 1) {
+		scene2();
+	}
+
+	getSharedData().fbo.begin();
+	getSharedData().post.draw(0, 0);
+	getSharedData().fbo.end();
 
 }
 
 // =========================================================================================
 void SceneA::draw() {
-	getSharedData().post.draw(0, 0);
+	//getSharedData().post.draw(0, 0);
+	getSharedData().fbo.draw(0, 0);
+	getSharedData().gui.draw();
 	gui.draw();
-	
 }
-
-// =========================================================================================
-void SceneA::keyPressed(int key)  {
-	int NUM_BRIGHT = 0;
-	switch (key) {
-	case 'a':
-		switch (sceneMode) {
-		case 0:
-			break;
-		case 1:
-			NUM_BRIGHT = 5;
-			break;
-		case 2:
-			NUM_BRIGHT = 20;
-			break;
-		case 3:
-			NUM_BRIGHT = 50;
-			break;
-		case 4:
-			NUM_BRIGHT = 100;
-			break;
-		}
-		myCam.setShakeTime(0.1);
-		//myCam.startThread();
-		for (int i = 0; i < NUM_BRIGHT; i++) {
-			int idx = int(ofRandom(0, circles.size()));
-			circles[idx].setIntensity(0.4f);
-			circles[idx].setBright(true);
-		}
-		break;
-	case 'd':
-		for (int i = 0; i < circles.size(); i++) {
-			circles[i].speedUp(0.1f);
-		}
-		break;
-	case 'z':
-		sceneMode = (sceneMode + 1) % 4;
-		break;
-	}
-}
-
 
 // =========================================================================================
 Circle SceneA::spawnCircle(float xRange, float yRange, ofVec2f sizeRange, ofColor color, bool isBright = false) {
@@ -143,6 +106,7 @@ void SceneA::scene1() {
 
 	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 	for (int i = 0; i < circles.size(); i++) {
+		circles[i].update(time);
 		circles[i].draw();
 	}
 
@@ -166,6 +130,7 @@ void SceneA::scene1() {
 // circle Burst
 void SceneA::scene2() {
 	myCam.customSetPosition(camPoses[camIdx], ofVec3f(0, 0, 0));
+
 	// Occluding Rendering Pass
 	occludeFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -193,7 +158,7 @@ void SceneA::scene2() {
 	occludeFbo.end();
 
 	// Normal Rendering Pass
-	renderFbo.begin();
+	normalFbo.begin();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -215,14 +180,14 @@ void SceneA::scene2() {
 	glDisable(GL_DEPTH_TEST);
 	myCam.end();
 
-	renderFbo.end();
+	normalFbo.end();
 
 	// Volumetric Pass
 	volumetricFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	volumetricShader.begin();
 	volumetricShader.setUniformTexture("occludeTex", occludeFbo.getTexture(), 0);
-	volumetricShader.setUniformTexture("colorTex", renderFbo.getTexture(), 1);
+	volumetricShader.setUniformTexture("colorTex", normalFbo.getTexture(), 1);
 	volumetricShader.setUniform3f("screenLightPos", 0.5, screenY, 0.0);
 	volumetricShader.setUniform1f("density", density);
 	volumetricShader.setUniform1f("weight", weight);
@@ -237,12 +202,57 @@ void SceneA::scene2() {
 	volumetricFbo.end();
 
 	// Post effect Pass
-	getSharedData().post.begin();
+	//getSharedData().post.begin();
+	renderFbo.begin();
 	volumetricFbo.draw(0, 0);
-	//occludeFbo.draw(0, 0);
-	//renderFbo.draw(0, 0);
+	renderFbo.end();
+
+	getSharedData().post.begin();
+	renderFbo.draw(0, 0);
 	getSharedData().post.end();
+	//getSharedData().post.end();
 }
+// =========================================================================================
+void SceneA::keyPressed(int key) {
+	int NUM_BRIGHT = 0;
+	switch (key) {
+	case 'a':
+		switch (sceneMode) {
+		case 0:
+			break;
+		case 1:
+			NUM_BRIGHT = 5;
+			break;
+		case 2:
+			NUM_BRIGHT = 20;
+			break;
+		case 3:
+			NUM_BRIGHT = 50;
+			break;
+		case 4:
+			NUM_BRIGHT = 100;
+			break;
+		}
+		myCam.setShakeTime(0.1);
+		//myCam.startThread();
+		for (int i = 0; i < NUM_BRIGHT; i++) {
+			int idx = int(ofRandom(0, circles.size()));
+			circles[idx].setIntensity(0.4f);
+			circles[idx].setBright(true);
+		}
+		break;
+	case 's':
+		sceneMode = (sceneMode + 1) % 2;
+		camIdx = (camIdx + 1) % 2;
+		break;
+	case 'd':
+		for (int i = 0; i < circles.size(); i++) {
+			circles[i].speedUp(0.1f);
+		}
+		break;
+	}
+}
+
 // =========================================================================================
 string SceneA::getName() {
 	return "SceneA";

@@ -6,7 +6,27 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	
+
+	ofSetFrameRate(60);
+	ofSetVerticalSync(true);
+	ofEnableAntiAliasing();
+
+	// GUI Settings
+	stateMachine.getSharedData().gui.setup();
+	stateMachine.getSharedData().gui.setPosition(10, 10);
+	stateMachine.getSharedData().gui.add(isBloom.setup("Bloom", false));
+	stateMachine.getSharedData().gui.add(isEdge.setup("Edge", false));
+	stateMachine.getSharedData().gui.add(isDof.setup("Dof", false));
+	stateMachine.getSharedData().gui.add(isNoiseWarp.setup("NoiseWarp", false));
+	stateMachine.getSharedData().gui.add(isPixelate.setup("Pixelate", false));
+	stateMachine.getSharedData().gui.add(isRGBShift.setup("RGBShift", false));
+	stateMachine.getSharedData().gui.add(isZoomBlur.setup("ZoomBlur", false));
+	stateMachine.getSharedData().gui.add(isGodray.setup("Godray", false));
+	stateMachine.getSharedData().gui.add(isInvert.setup("Invert", false));
+	stateMachine.getSharedData().gui.add(isGlitch.setup("Glitch", false));
+	stateMachine.getSharedData().gui.add(sound.set("Sound", 0, 0, 1));
+	stateMachine.getSharedData().gui.add(fps.set("fps", 60, 0, 60));
+
 	stateMachine.getSharedData().post.init(ofGetWidth(), ofGetHeight());
 	stateMachine.getSharedData().post.setFlip(false);
 	stateMachine.getSharedData().post.createPass<BloomPass>()->setEnabled(isBloom);
@@ -18,6 +38,9 @@ void ofApp::setup() {
 	stateMachine.getSharedData().post.createPass<ZoomBlurPass>()->setEnabled(isZoomBlur);
 	stateMachine.getSharedData().post.createPass<GodRaysPass>()->setEnabled(isGodray);
 	stateMachine.getSharedData().post.createPass<Invert>()->setEnabled(isInvert);
+	stateMachine.getSharedData().post.createPass<Glitch>()->setEnabled(isGlitch);
+
+	stateMachine.getSharedData().fbo.allocate(ofGetWidth(), ofGetHeight());
 
 	stateMachine.addState<SceneA>();
 	stateMachine.addState<SceneB>();
@@ -25,9 +48,22 @@ void ofApp::setup() {
 	stateMachine.addState<SceneD>();
 	stateMachine.changeState("SceneA");
 
-	ofSetFrameRate(60);
-	ofSetVerticalSync(true);
-	ofEnableAntiAliasing();
+	// Sound setup
+	//soundStream.setup(this, 0, 2, 44100, 256);
+	smoothedVol = 0.0;
+	ofSoundStreamSettings settings;
+	auto devices = soundStream.getMatchingDevices("default");
+	if (!devices.empty()) {
+		settings.setInDevice(devices[0]);
+	}
+	settings.setInListener(this);
+	settings.sampleRate = 44100;
+	settings.numOutputChannels = 0;
+	settings.numInputChannels = 2;
+	settings.bufferSize = 256;
+	soundStream.setup(settings);
+
+	stateMachine.getSharedData().volume = 0;
 }
 
 //--------------------------------------------------------------
@@ -35,18 +71,21 @@ void ofApp::update(){
 	stateMachine.getSharedData().time = ofGetElapsedTimef();
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
 
-	stateMachine.getSharedData().post[0]->setEnabled(sub->isBloom);
-	stateMachine.getSharedData().post[1]->setEnabled(sub->isEdge);
-	stateMachine.getSharedData().post[2]->setEnabled(sub->isDof);
-	stateMachine.getSharedData().post[3]->setEnabled(sub->isNoiseWarp);
-	stateMachine.getSharedData().post[4]->setEnabled(sub->isPixelate);
-	stateMachine.getSharedData().post[5]->setEnabled(sub->isRGBShift);
-	stateMachine.getSharedData().post[6]->setEnabled(sub->isZoomBlur);
-	stateMachine.getSharedData().post[7]->setEnabled(sub->isGodray);
-	stateMachine.getSharedData().post[8]->setEnabled(sub->isInvert);
+	stateMachine.getSharedData().post[0]->setEnabled(isBloom);
+	stateMachine.getSharedData().post[1]->setEnabled(isEdge);
+	stateMachine.getSharedData().post[2]->setEnabled(isDof);
+	stateMachine.getSharedData().post[3]->setEnabled(isNoiseWarp);
+	stateMachine.getSharedData().post[4]->setEnabled(isPixelate);
+	stateMachine.getSharedData().post[5]->setEnabled(isRGBShift);
+	stateMachine.getSharedData().post[6]->setEnabled(isZoomBlur);
+	stateMachine.getSharedData().post[7]->setEnabled(isGodray);
+	stateMachine.getSharedData().post[8]->setEnabled(isInvert);
+	stateMachine.getSharedData().post[9]->setEnabled(isGlitch);
 
-	sub->fbo.getTexture() = stateMachine.getSharedData().post.getProcessedTextureReference();
-	sub->fps = ofGetFrameRate();
+	sub->fbo = stateMachine.getSharedData().fbo;
+
+	sound = stateMachine.getSharedData().volume;
+	fps = ofGetFrameRate();
 }
 
 //--------------------------------------------------------------
@@ -63,6 +102,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case '2':
 		stateMachine.changeState("SceneB");
+		isBloom = true;
 		break;
 	case '3':
 		stateMachine.changeState("SceneC");
@@ -73,6 +113,36 @@ void ofApp::keyPressed(int key){
 	case ' ':
 		ofToggleFullscreen();
 		break;
+	// Post Effect enable/disable
+	case 'q': // Bloom
+		isBloom = !isBloom;
+		break;
+	case 'w': // Edge
+		isEdge = !isEdge;
+		break;
+	case 'e': // Dof
+		isDof = !isDof;
+		break;
+	case 'r': // NoiseWarp
+		isNoiseWarp = !isNoiseWarp;
+		break;
+	case 't': // Pixelate
+		isPixelate = !isPixelate;
+		break;
+	case 'y': // RGBShift
+		isRGBShift = !isRGBShift;
+		break;
+	case 'u': // ZoomBlur
+		isZoomBlur = !isZoomBlur;
+		break;
+	case 'i': // Godray
+		isGodray = !isGodray;
+		break;
+	case 'o':
+		isInvert = !isInvert;
+		break;
+	case 'p':
+		isGlitch = !isGlitch;
 	}
 }
 
@@ -124,4 +194,24 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+
+//--------------------------------------------------------------
+void ofApp::audioIn(ofSoundBuffer & input) {
+	float curVol = 0.0;
+	int numCounted = 0;
+	for(int i = 0; i < input.getNumFrames(); i++) {
+		float left = input[i * 2] * 0.5;
+		float right = input[i * 2 + 1] * 0.5;
+		curVol += left * left;
+		curVol += right * right;
+		numCounted += 2;
+	}
+	curVol /= (float)numCounted;
+	curVol = sqrt(curVol);
+
+	/*smoothedVol *= 0.93;
+	smoothedVol += 0.07 * curVol;*/
+
+	stateMachine.getSharedData().volume = ofMap(curVol, 0, 0.17, 0, 1);
 }

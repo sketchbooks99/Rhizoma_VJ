@@ -17,13 +17,14 @@ void main() {
     for(int i = 0; i < 3; i++) {
         gl_Position = modelViewProjectionMatrix * gl_in[i].gl_Position;
         vNormal = normal;
-        vColor = vec4(0.7, 1.0, 1.0, 1.0);
+        // vColor = vec4(0.7, 1.0, 1.0, 1.0);
+        vColor = vec4(0.5, 0.0, 0.0, 1.0);
         EmitVertex();
     }
     EndPrimitive();
 
     for(int i = 0; i < 3; i++) {
-        vec3 newVertex = gl_in[i].gl_Position.xyz * 0.9 + center * 0.1 + normal * 0.01;
+        vec3 newVertex = gl_in[i].gl_Position.xyz * 0.8 + center * 0.2 + normal * 0.01;
         gl_Position = modelViewProjectionMatrix * vec4(newVertex, 1.0);
         vNormal = normal;
         vColor = vec4(vec3(0.1), 1.0);

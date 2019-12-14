@@ -128,7 +128,7 @@ private:
 	void scene3();
 	void scene4();
 
-	ofFbo renderFbo, occludeFbo, volumetricFbo;
+	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo;
 	myCamera myCam;
 	ofShader renderShader, volumetricShader;
 

@@ -9,10 +9,8 @@ public:
 	void setup();
 	void draw();
 	void keyPressed(int key);
+	ofVec2f getWindowSize() { return ofVec2f(ofGetWidth(), ofGetHeight()); }
 	ofxPanel gui;
-	ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert;
 
 	ofFbo fbo;
-	float fps;
-	//shared_ptr<ofApp> mainApp;
 };

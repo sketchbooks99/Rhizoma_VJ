@@ -5,6 +5,7 @@
 #include "SharedData.h"
 #include "ofxPostProcessing.h"
 #include "subApp.h"
+#include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
 
@@ -24,9 +25,15 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+		void audioIn(ofSoundBuffer & input);
 		
 		itg::ofxStateMachine<SharedData> stateMachine; 
-		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert;
+		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert, isGlitch;
+		ofParameter<float> sound, fps;
+		ofxPanel gui;
+
+		ofSoundStream soundStream;
+		float smoothedVol;
 
 		shared_ptr<subApp> sub;
 };

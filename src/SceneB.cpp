@@ -80,8 +80,8 @@ void SceneB::setup() {
 
 // =========================================================================================
 void SceneB::update() {
-	//time = getSharedData().time;
-	time = 0.0;
+	time = getSharedData().time;
+	//time = 0.0;
 	fps = ofGetFrameRate();
 	// Computing Force pass
 	/*posTex.bindAsImage(0, GL_READ_WRITE);
@@ -140,9 +140,8 @@ void SceneB::update() {
 	forceBuffer.unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
 	forceBuffer.unbind(GL_SHADER_STORAGE_BUFFER);*/
 
-	cam.setPosition(sin(time) * 100, -10, cos(time) * 100);
+	cam.setPosition(sin(time * 0.5) * 100, -10, cos(time * 1.0) * 100);
 	cam.lookAt(ofVec3f(0, 0, 0));
-
 	// render pass
 	renderFbo.begin();
 
@@ -184,10 +183,10 @@ void SceneB::draw() {
 
 // =========================================================================================
 ofVboMesh SceneB::createPiramid(float scale) {
-	ofVec3f v0 = ofVec3f(0, -2, 0) * scale; // top
-	ofVec3f v1 = ofVec3f(sin(TWO_PI), 0, cos(TWO_PI)) * scale;
-	ofVec3f v2 = ofVec3f(sin(TWO_PI / 3), 0, cos(TWO_PI / 3)) * scale;
-	ofVec3f v3 = ofVec3f(sin(TWO_PI * 2 / 3), 0, cos(TWO_PI * 2 / 3)) * scale;
+	ofVec3f v0 = ofVec3f(0, 0, 5) * scale; // front
+	ofVec3f v1 = ofVec3f(sin(TWO_PI), cos(TWO_PI), 0) * scale;
+	ofVec3f v2 = ofVec3f(sin(TWO_PI / 3), cos(TWO_PI / 3), 0) * scale;
+	ofVec3f v3 = ofVec3f(sin(TWO_PI * 2 / 3), cos(TWO_PI * 2 / 3), 0) * scale;
 
 	ofVboMesh mesh;
 	mesh.setMode(OF_PRIMITIVE_TRIANGLES);

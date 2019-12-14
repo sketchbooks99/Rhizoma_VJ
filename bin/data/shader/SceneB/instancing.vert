@@ -36,11 +36,11 @@ void main() {
     float rotX = -asin(boid.vel.y / (length(boid.vel.xyz) + 1e-8));
     mat4 rotMatrix = eulerAngleToRotationMatrix(vec3(rotX, rotY, 0.0));
     obj2world = rotMatrix * obj2world;
-    // obj2world[0][3] += boid.pos.x; 
-    // obj2world[1][3] += boid.pos.y; 
-    // obj2world[2][3] += boid.pos.z; 
+    obj2world[3][0] += boid.pos.x; 
+    obj2world[3][1] += boid.pos.y; 
+    obj2world[3][2] += boid.pos.z; 
 
-    vec3 pos = (obj2world * position).xyz + boid.pos;
+    vec3 pos = (obj2world * position).xyz;// + boid.pos;
 
     gl_Position = vec4(pos, 1.0);
 }

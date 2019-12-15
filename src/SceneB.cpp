@@ -19,7 +19,7 @@ void SceneB::setup() {
 	box = ofBoxPrimitive(wallSize.x, wallSize.y, wallSize.z).getMesh();
 	attractor = ofSpherePrimitive(1, 16);
 
-	numFish = 1024 * 4;
+	numFish = 1024 * 8;
 	// texRes = int(sqrt(float(numFish)));
 	piramid = createPiramid(ofRandom(1, 3));
 	 //piramid = ofBoxPrimitive(5, 5, 5).getMesh();
@@ -49,9 +49,24 @@ void SceneB::setup() {
 	dataBuffer.allocate(boids, GL_DYNAMIC_DRAW);
 	dataBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 1);
 
+	// Init curl noise buffer
+	vector<Lifetime> lifetimes;
+	lifetimes.resize(numFish);
+	i = 0;
+	for (auto& l : lifetimes) {
+		l.age = 0.0;
+		//l.maxAge = ofRandom();
+		if (i % 2 == 0) l.maxAge = 1.0;
+		else l.maxAge = 1.5;
+		i++;
+	}
+	lifeBuffer.allocate(lifetimes, GL_DYNAMIC_DRAW);
+	lifeBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+
 	// Load shader
 	forceCompute.loadCompute("shader/SceneB/forceCompute.glsl");
 	integrate.loadCompute("shader/SceneB/compute.glsl");
+	curlCompute.loadCompute("shader/SceneB/curlNoise.glsl");
 	//instancingShader.load("shader/SceneB/instancing.vert", "shader/SceneB/instancing.frag");
 	instancingShader.load("shader/SceneB/instancing.vert", "shader/SceneB/instancing.frag", "shader/SceneB/instancing.geom");
 
@@ -74,6 +89,23 @@ void SceneB::setup() {
 		float z = ofRandom(-wallSize.z / 2, wallSize.z / 2);
 		ofVec3f attPos = ofVec3f(x, y, z);
 		attractorPoses.push_back(attPos);
+	}
+
+	// Camera positions
+	camRadiuses.push_back(wallSize / 2);
+	timeOffsets.push_back(ofVec3f(0.2));
+	for(int i = 0; i < 3; i++) {
+		ofVec3f radius;
+		radius.x = ofRandom(wallSize.x / 3, wallSize.x);
+		radius.y = ofRandom(wallSize.y / 3, wallSize.y);
+		radius.z = ofRandom(wallSize.z / 3, wallSize.z);
+		camRadiuses.push_back(radius);
+
+		ofVec3f offset;
+		offset.x = ofRandom(-0.7, 0.7);
+		offset.y = ofRandom(-0.7, 0.7);
+		offset.z = ofRandom(-0.7, 0.7);
+		timeOffsets.push_back(offset);
 	}
 
 	// ===== GUI Settings ===== 
@@ -109,6 +141,30 @@ void SceneB::update() {
 			attIdx = (int)ofRandom(0, 10);
 			break;
 	}*/
+	switch(sceneMode) {
+	case 0:
+		scene1();
+		break;
+	case 1:
+		scene2();
+		break;
+	}
+
+	// Render to Global fbo
+	getSharedData().fbo.begin();
+	getSharedData().post.draw(0, 0);
+	getSharedData().fbo.end();
+}
+
+// =========================================================================================
+void SceneB::draw() {
+	getSharedData().fbo.draw(0, 0);
+	getSharedData().gui.draw();
+	gui.draw();
+}
+
+// =========================================================================================
+void SceneB::scene1() {
 	if (getSharedData().volume > 0.7) {
 		attIdx = (int)ofRandom(0, attractorPoses.size());
 	}
@@ -164,14 +220,23 @@ void SceneB::update() {
 
 	// Background
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	ofBackgroundGradient(ofColor(30, 0, 50), ofColor(127, 127, 127));
+	//ofBackgroundGradient(ofColor(30, 0, 50), ofColor(127, 127, 127));
+	ofBackground(ofColor(0));
 
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
+	ofMatrix4x4 model;
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+
 	instancingShader.begin();
 	instancingShader.setUniformTexture("posTex", posTex, 0);
-	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.5, getSharedData().volume * 8.0));
+	instancingShader.setUniform1i("isInvert", getSharedData().post[8]->getEnabled());
+	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.7, getSharedData().volume * 10.0));
+	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
 	piramid.drawInstanced(OF_MESH_FILL, numFish);
 	instancingShader.end();
 
@@ -186,9 +251,6 @@ void SceneB::update() {
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
-	// posTex.draw(100, 100, posTex.getWidth(), posTex.getHeight());
-	// velTex.draw(200, 100, velTex.getWidth(), velTex.getHeight());
-	// forceTex.draw(300, 100, forceTex.getWidth(), forceTex.getHeight());
 
 	renderFbo.end();
 
@@ -196,21 +258,66 @@ void SceneB::update() {
 	getSharedData().post.begin();
 	renderFbo.draw(0, 0);
 	getSharedData().post.end();
-
-	// Render to Global fbo
-	getSharedData().fbo.begin();
-	getSharedData().post.draw(0, 0);
-	getSharedData().fbo.end();
 }
 
 // =========================================================================================
-void SceneB::draw() {
-	getSharedData().fbo.draw(0, 0);
-	getSharedData().gui.draw();
-	gui.draw();
-	/*posTex.draw(300, 100, 100, 100);
-	velTex.draw(400, 100, 100, 100);
-	forceTex.draw(500, 100, 100, 100);*/
+void SceneB::scene2() {
+
+	// compute curl Noise
+	curlCompute.begin();
+	curlCompute.setUniform1f("time", time);
+	curlCompute.setUniform1f("timestep", 0.01);
+	curlCompute.setUniform1f("scale", 0.01);
+	curlCompute.dispatchCompute((boids.size() + 1024 - 1) / 1024, 1, 1);
+	curlCompute.end();
+
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	cam.setPosition(
+		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x), 
+		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y), 
+		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z)
+	);
+	cam.lookAt(ofVec3f(0, 0, 0));
+
+	ofMatrix4x4 model;
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ofBackground(0);
+	glEnable(GL_DEPTH_TEST);
+
+	cam.begin();
+
+	instancingShader.begin();
+	instancingShader.setUniformTexture("posTex", posTex, 0);
+	instancingShader.setUniform1i("isInvert", getSharedData().post[8]->getEnabled());
+	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.5, getSharedData().volume * 8.0));
+	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
+	piramid.drawInstanced(OF_MESH_FILL, numFish);
+	instancingShader.end();
+
+	cam.end();
+	glDisable(GL_DEPTH_TEST);
+
+	renderFbo.end();
+
+	getSharedData().post.begin();
+	renderFbo.draw(0, 0);
+	getSharedData().post.end();
+}
+
+// =========================================================================================
+void SceneB::scene3() {
+
+}
+
+void SceneB::scene4() {
+
 }
 
 // =========================================================================================
@@ -245,7 +352,11 @@ ofVboMesh SceneB::createPiramid(float scale) {
 void SceneB::keyPressed(int key) {
 	switch (key) {
 	case 'a':
-		attIdx = (int)ofRandom(0, attractorPoses.size());
+		if(sceneMode == 0) attIdx = (int)ofRandom(0, attractorPoses.size());
+		else if(sceneMode == 1) camIdx = (int)ofRandom(0, 4);
+ 		break;
+	case 's':
+		sceneMode = (int)ofRandom(0, 2);  
 	}
 }
 

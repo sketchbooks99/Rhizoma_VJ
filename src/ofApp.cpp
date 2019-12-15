@@ -218,10 +218,10 @@ void ofApp::audioIn(ofSoundBuffer & input) {
 
 	if (curVol > kickThreshold) {
 		kickThreshold = curVol;
-		isKicked = true;
+		stateMachine.getSharedData().isKicked = true;
 	}
 	else {
-		isKicked = false;
+		stateMachine.getSharedData().isKicked = false;
 	}
 
 	/*smoothedVol *= 0.93;

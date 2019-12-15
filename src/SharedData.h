@@ -35,6 +35,7 @@ public:
 
 	// sound
 	float volume;
+	bool isKicked;
 	/*
 	float *fftSmoothed;
 	float *volume;

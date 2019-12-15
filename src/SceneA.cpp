@@ -9,7 +9,7 @@ void SceneA::setup() {
 	rs.useStencil = true;
 	rs.depthStencilAsTexture = true;
 	rs.textureTarget = GL_TEXTURE_2D;
-	rs.numSamples = 16;
+	//rs.numSamples = 16;
 	renderFbo.allocate(rs);
 	normalFbo.allocate(rs);
 	occludeFbo.allocate(rs);

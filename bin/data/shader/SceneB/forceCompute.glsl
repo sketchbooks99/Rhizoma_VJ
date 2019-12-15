@@ -1,4 +1,5 @@
 #version 440
+precision mediump float;
 
 layout(rgba32f, binding=0) uniform image2D posTex;
 layout(rgba32f, binding=1) uniform image2D velTex;

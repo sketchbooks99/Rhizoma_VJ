@@ -1,4 +1,5 @@
 #version 410 core
+precision mediump float;
 
 uniform bool isBright;
 uniform float intensity;

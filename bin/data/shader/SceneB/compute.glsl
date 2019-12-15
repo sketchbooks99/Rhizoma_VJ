@@ -1,4 +1,5 @@
 #version 440
+precision mediump float;
 
 const int BLOCK_SIZE = 1024;
 

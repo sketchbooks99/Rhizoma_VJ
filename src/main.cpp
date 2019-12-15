@@ -6,7 +6,6 @@
 int main( ){
 	ofGLFWWindowSettings s;
 
-	s.numSamples = 16;
 	s.setGLVersion(4, 5);
 	s.setSize(3840, 2160);
 	s.setPosition(ofVec2f(1920, 0));

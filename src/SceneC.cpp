@@ -1,95 +1,167 @@
 #include "SceneC.h"
 
+// =============================================================
 void SceneC::setup() {
-	ofBackground(0);
-	ofSetCircleResolution(64);
-	//ofSetFrameRate(60);
+	gBufferShader.load("shader/SceneC/gBuffer.vert", "shader/SceneC/gBuffer.frag");
+	//gRenderShader.load("shader/SceneC/gRender.vert", "shader/SceneC/gRender.frag");
+	rayShader.load("shader/SceneC/ray.vert", "shader/SceneC/ray.frag");
+	//lightingShader.load("shader/SceneC/lighting.vert", "shader/SceneC/lighting.frag");
 
-	ofSetSmoothLighting(true);
+	createGBuffer();
+	createRenderBuffer();
 
-	radius = 100;
-	plWidth = 1000; plHeight = 1000;
+	cam.setNearClip(0.1);
+	cam.setFarClip(5000);
+	cam.setFov(70);
+	cam.setDistance(5.0);
 
-	vboMesh = ofSpherePrimitive(radius, 64).getMesh();
 
-	planeMesh = ofPlanePrimitive(plWidth, plHeight,10, 10).getMesh();
-	for (int i = 0; i < planeMesh.getVertices().size(); i++) {
-		int x = i % 10;
-		int y = i / 10;
-		ofVec3f pos = planeMesh.getVertex(i);
-		pos.z += ofNoise(x, y) * 50.0;
+	// Plane to render ray marching
+	quad.setMode(OF_PRIMITIVE_TRIANGLE_FAN);
+	quad.addVertex(ofVec3f(1.0, 1.0, 0.0)); // top-right
+	quad.addTexCoord(ofVec2f(1.0, 1.0));
+	quad.addVertex(ofVec3f(1.0, -1.0, 0.0)); //bottom-right
+	quad.addTexCoord(ofVec2f(1.0, 0.0f));
+	quad.addVertex(ofVec3f(-1.0, -1.0, 0.0)); //bottom-left
+	quad.addTexCoord(ofVec2f(0.0f, 0.0f));
+	quad.addVertex(ofVec3f(-1.0, 1.0, 0.0)); //top-left
+	quad.addTexCoord(ofVec2f(0.0f, 1.0));
 
-		float delight = ofRandom(1.0);
-		planeMesh.setVertex(i, pos);
-
-		ofVec4f spawn = ofVec4f(pos.x, pos.y, pos.z, ofRandom(1, 3));
-		spawnP.push_back(spawn);
-
-		float velZ = ofRandom(3.0, 6.0);
-		spawnVelZ.push_back(velZ);
+	// Geometry settings
+	box = ofBoxPrimitive(4,4,4).getMesh();
+	for(int i = 0; i < box.getVertices().size(); i++) {
+		box.addColor(ofFloatColor(1, 0, 0, 1));
 	}
 
-	translate = ofVec3f(ofGetWidth() / 2, ofGetHeight() / 2, 0);
-
-	glPointSize(3.0f);
-
-
+	// Custom GUI Settings
+	gui.setup();
+	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
+	gui.add(showTex.setup("showTex", false));
 }
 
+// =============================================================
 void SceneC::update() {
 	time = getSharedData().time;
 
-	for (int i = 0; i < planeMesh.getVertices().size(); i++) {
-		ofVec3f pos = planeMesh.getVertex(i);
-		float newZ = pos.z + sin(time + i) * 0.3;
-		planeMesh.setVertex(i, ofVec3f(pos.x, pos.y, newZ));
-
-		if (spawnP[i].w < 0) {
-			spawnP[i] = ofVec4f(pos.x, pos.y, pos.z, ofRandom(1, 2));
-			spawnVelZ[i] = ofRandom(3, 6);
-		}
-		spawnP[i].w -= 0.01;
-		spawnVelZ[i] *= 0.99;
-		spawnP[i].z += spawnVelZ[i];
-	}
-
-	getSharedData().post.begin(cam);
-
 	glEnable(GL_DEPTH_TEST);
 
-	ofPushMatrix();
-	ofTranslate(0, 100, 0);
+	// Render Geometry to G-Buffer
+	gFbo.begin();
+	gFbo.activateAllDrawBuffers();
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	vboMesh.draw();
+	cam.begin();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 model;
+	model.rotate(time * 50.0, 1.0, 0.7, 0.4);
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
 
-	ofPopMatrix();
+	gBufferShader.begin();
+	gBufferShader.setUniformMatrix4f("model", model);
+	gBufferShader.setUniformMatrix4f("view", view);
+	gBufferShader.setUniformMatrix4f("peojection", projection);
+	gBufferShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
+	box.draw(OF_MESH_FILL);
+	gBufferShader.end();
 
-	ofPushMatrix();
-	ofScale(1, -1, 1);
-	ofRotateXDeg(90.0);
-	ofTranslate(0, 0, -200);
-	ofSetColor(255);
-	planeMesh.drawWireframe();
-	ofSetColor(255, 50);
-	planeMesh.draw();
-	for (int i = 0; i < planeMesh.getVertices().size(); i++) {
-		ofVec3f pos = planeMesh.getVertex(i);
-		ofSetColor(100, 200, 200, 200);
-		ofDrawSphere(pos, 5);
-		ofDrawSphere(spawnP[i].x, spawnP[i].y, spawnP[i].z, 5);
-	}
+	cam.end();
+	gFbo.end();
 
-	ofPopMatrix;
+	// Render ray marching
+	gFbo.begin();
+	gFbo.activateAllDrawBuffers();
+	cam.begin();
+
+	rayShader.begin();
+	rayShader.setUniform1f("time", time);
+	rayShader.setUniformMatrix4f("view", view);
+	rayShader.setUniform2f("resolution", gFbo.getWidth(), gFbo.getHeight());
+	rayShader.setUniformMatrix4f("projection", projection);
+	rayShader.setUniform3f("camPos", cam.getGlobalPosition());
+	rayShader.setUniform3f("camUp", cam.getUpDir());
+	rayShader.setUniform1f("fov", cam.getFov());
+	rayShader.setUniform1f("farClip", cam.getFarClip());
+	rayShader.setUniform1f("nearClip", cam.getNearClip());
+
+	quad.draw(OF_MESH_FILL);
+
+	rayShader.end();
+	cam.end();
+	gFbo.end();
 
 	glDisable(GL_DEPTH_TEST);
 
+	getSharedData().post.begin();
+	gFbo.getTexture(2).draw(0, 0);
 	getSharedData().post.end();
+
+	getSharedData().fbo.begin();
+	getSharedData().post.draw();
+	getSharedData().fbo.end();
 }
 
+// =============================================================
 void SceneC::draw() {
-	getSharedData().post.draw(0, 0);
+	getSharedData().fbo.draw(0, 0);
+	getSharedData().gui.draw();
+	gui.draw();
+	if (showTex) {
+		gFbo.getTexture(0).draw(10, getSharedData().gui.getHeight() + 10, 100, 100);
+		gFbo.getTexture(1).draw(110, getSharedData().gui.getHeight() + 10, 100, 100);
+		gFbo.getTexture(2).draw(210, getSharedData().gui.getHeight() + 10, 100, 100);
+	}
 }
 
+// =============================================================
+void SceneC::createGBuffer() {
+
+	ofFbo::Settings gSettings;
+	gSettings.textureTarget = GL_TEXTURE_2D;
+	gSettings.width = ofGetWidth();
+	gSettings.height = ofGetHeight();
+	gSettings.internalformat = GL_RGB32F;
+	gSettings.useDepth = true;
+	gSettings.useStencil = true;
+	gSettings.depthStencilAsTexture = true;
+	gSettings.depthStencilInternalFormat = GL_DEPTH_COMPONENT;
+	gSettings.maxFilter = GL_NEAREST;
+	gSettings.minFilter = GL_NEAREST;
+	gSettings.wrapModeVertical = GL_CLAMP_TO_EDGE;
+	gSettings.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
+	gFbo.allocate(gSettings);
+
+	gFbo.createAndAttachTexture(GL_RGB32F, 1);
+	gFbo.createAndAttachTexture(GL_RGB32F, 2);
+	gFbo.createAndAttachTexture(GL_RGB32F, 3);
+	gFbo.checkStatus();
+}
+
+//--------------------------------------------------------------
+void SceneC::createRenderBuffer() {
+
+	ofFbo::Settings rSettings;
+	rSettings.textureTarget = GL_TEXTURE_2D;
+	rSettings.width = ofGetWidth();
+	rSettings.height = ofGetHeight();
+	rSettings.useDepth = true;
+	rSettings.useStencil = true;
+	rSettings.internalformat = GL_RGB32F;
+	rSettings.depthStencilAsTexture = true;
+	rSettings.depthStencilInternalFormat = GL_DEPTH_COMPONENT;
+	rSettings.maxFilter = GL_NEAREST;
+	rSettings.minFilter = GL_NEAREST;
+
+	rSettings.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
+	rSettings.wrapModeVertical = GL_CLAMP_TO_EDGE;
+	renderFbo.allocate(rSettings);
+
+	renderFbo.createAndAttachTexture(GL_RGB32F, 1);
+}
+
+//--------------------------------------------------------------
 string SceneC::getName() {
 	return "SceneC";
 }

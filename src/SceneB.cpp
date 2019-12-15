@@ -9,7 +9,7 @@ void SceneB::setup() {
 	rs.useStencil = true;
 	rs.depthStencilAsTexture = true;
 	rs.textureTarget = GL_TEXTURE_2D;
-	rs.numSamples = 16;
+	//rs.numSamples = 16;
 	renderFbo.allocate(rs);
 
 
@@ -56,8 +56,9 @@ void SceneB::setup() {
 	for (auto& l : lifetimes) {
 		l.age = 0.0;
 		//l.maxAge = ofRandom();
-		if (i % 2 == 0) l.maxAge = 1.0;
-		else l.maxAge = 1.5;
+		/*if (i % 2 == 0) l.maxAge = 1.0;
+		else l.maxAge = 1.5;*/
+		l.maxAge = ofRandom(1.0, 3.0);
 		i++;
 	}
 	lifeBuffer.allocate(lifetimes, GL_DYNAMIC_DRAW);
@@ -300,7 +301,7 @@ void SceneB::scene2() {
 	instancingShader.begin();
 	instancingShader.setUniformTexture("posTex", posTex, 0);
 	instancingShader.setUniform1i("isInvert", getSharedData().post[8]->getEnabled());
-	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.5, getSharedData().volume * 8.0));
+	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(1.0, getSharedData().volume * 10.0));
 	instancingShader.setUniform1i("numFish", numFish);
 	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
 	piramid.drawInstanced(OF_MESH_FILL, numFish);

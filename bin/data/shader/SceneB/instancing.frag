@@ -1,4 +1,5 @@
 #version 450
+precision mediump float;
 
 in vec4 vColor;
 in vec3 vNormal;
@@ -15,7 +16,7 @@ void main() {
     float diffuse = max(dot(invLight, vNormal), 0.0);
     float specular = pow(diffuse, 20.0);
     vec3 ambient = vColor.rgb * 0.3;
-    vec3 destColor = vColor.rgb * (ambient + diffuse) + specular * 0.5;
+    vec3 destColor = vColor.rgb + specular * 0.5;
 
     // fragColor = vColor;
     fragColor = vec4(destColor, 1.0);

@@ -7,7 +7,7 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	ofSetFrameRate(60);
+	ofSetFrameRate(30);
 	ofSetVerticalSync(true);
 	//ofEnableAntiAliasing();
 
@@ -51,7 +51,12 @@ void ofApp::setup() {
 
 	// Sound setup
 	//soundStream.setup(this, 0, 2, 44100, 256);
+	decayRate = 0.05;
+	minimumThreshold = 0.1;
+	kickThreshold = minimumThreshold;
+	curVol = 0.0;
 	smoothedVol = 0.0;
+	stateMachine.getSharedData().volume = 0;
 	ofSoundStreamSettings settings;
 	auto devices = soundStream.getMatchingDevices("default");
 	if (!devices.empty()) {
@@ -63,19 +68,11 @@ void ofApp::setup() {
 	settings.numInputChannels = 2;
 	settings.bufferSize = 256;
 	soundStream.setup(settings);
-
-	stateMachine.getSharedData().volume = 0;
-
-	decayRate = 0.05;
-	minimumThreshold = 0.1;
-	kickThreshold = minimumThreshold;
-	curVol = 0.0;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 	stateMachine.getSharedData().time = ofGetElapsedTimef();
-	ofSetWindowTitle(ofToString(ofGetFrameRate()));
 
 	sub->fbo = stateMachine.getSharedData().fbo;
 
@@ -220,9 +217,11 @@ void ofApp::audioIn(ofSoundBuffer & input) {
 	if (curVol > kickThreshold) {
 		kickThreshold = curVol;
 		stateMachine.getSharedData().isKicked = true;
+		isKicked = true;
 	}
 	else {
 		stateMachine.getSharedData().isKicked = false;
+		isKicked = false;
 	}
 
 	/*smoothedVol *= 0.93;

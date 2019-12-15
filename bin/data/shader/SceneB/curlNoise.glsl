@@ -1,4 +1,5 @@
 #version 440
+precision mediump float;
 
 const int BLOCK_SIZE = 1024;
 
@@ -48,11 +49,12 @@ void main() {
     
     if (age >= maxAge) {
         age = 0.0;
-		maxAge = 1.0;
+		maxAge = 1.0 + random(pos.xy) * 1.0;
         float theta = 2.0 * PI * random(pos.yy);
         float phi = PI * random(pos.zz);
         float r = random(pos.xy);
-		pos = vec3(r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)) * 20.0;
+		// pos = vec3(r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)) * 20.0;
+        pos = vec3(random(pos.xx + time * 0.1), random(pos.yy + time * 0.3), random(pos.zz + time * 0.5)) * 100.0;
 		vel = normalize(pos);
     }
 

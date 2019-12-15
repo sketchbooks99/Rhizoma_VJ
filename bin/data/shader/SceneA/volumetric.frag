@@ -1,4 +1,5 @@
 #version 410 core
+precision mediump float;
 
 uniform sampler2D occludeTex;
 uniform sampler2D colorTex;

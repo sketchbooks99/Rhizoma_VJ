@@ -13,6 +13,11 @@ class SceneC : public itg::ofxState<SharedData> {
 	void createGBuffer();
 	void createRenderBuffer();
 
+	struct Particle {
+		ofVec3f pos;
+		ofVec3f vel;
+	};
+
 	// Shaders & fbo
 	ofShader rayShader, postShader, lightingShader, gBufferShader, gRenderShader;
 	ofFbo renderFbo, gFbo;
@@ -24,22 +29,15 @@ class SceneC : public itg::ofxState<SharedData> {
 
 	// GPU Particles
 	int numParticles, textureRes;
-	//pingPongBuffer posPingPong, velPingPong;
 	ofShader compute, renderParticle;
+	ofBufferObject particleBuffer;
 	ofVboMesh particle;
-	
 
-	int plWidth, plHeight;
-	ofVboMesh vboMesh, planeMesh;
-
-	ofEasyCam cam;
-	int radius;
+	// General parameters
 	float time;
+	int sceneIdx;
+	myCamera cam;
 
-	vector<ofVec3f> points;
-	vector<ofVec3f> speeds; 
-	vector<ofVec4f> spawnP;
-	vector<float> spawnVelZ;
-
-	ofVec3f translate;
+	// Geometry
+	ofVboMesh box;
 };

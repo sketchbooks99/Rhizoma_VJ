@@ -18,7 +18,7 @@ void main() {
         gl_Position = modelViewProjectionMatrix * gl_in[i].gl_Position;
         vNormal = normal;
         // vColor = vec4(0.7, 1.0, 1.0, 1.0);
-        vColor = vec4(0.5, 0.0, 0.0, 1.0);
+        vColor = vec4(1.0, 0.0, 0.0, 1.0);
         EmitVertex();
     }
     EndPrimitive();

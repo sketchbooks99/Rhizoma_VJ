@@ -9,7 +9,7 @@ void ofApp::setup() {
 
 	ofSetFrameRate(60);
 	ofSetVerticalSync(true);
-	ofEnableAntiAliasing();
+	//ofEnableAntiAliasing();
 
 	// GUI Settings
 	stateMachine.getSharedData().gui.setup();
@@ -76,17 +76,6 @@ void ofApp::update(){
 	stateMachine.getSharedData().time = ofGetElapsedTimef();
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
 
-	stateMachine.getSharedData().post[0]->setEnabled(isBloom);
-	stateMachine.getSharedData().post[1]->setEnabled(isEdge);
-	stateMachine.getSharedData().post[2]->setEnabled(isDof);
-	stateMachine.getSharedData().post[3]->setEnabled(isNoiseWarp);
-	stateMachine.getSharedData().post[4]->setEnabled(isPixelate);
-	stateMachine.getSharedData().post[5]->setEnabled(isRGBShift);
-	stateMachine.getSharedData().post[6]->setEnabled(isZoomBlur);
-	stateMachine.getSharedData().post[7]->setEnabled(isGodray);
-	stateMachine.getSharedData().post[8]->setEnabled(isInvert);
-	stateMachine.getSharedData().post[9]->setEnabled(isGlitch);
-
 	sub->fbo = stateMachine.getSharedData().fbo;
 
 	sound = stateMachine.getSharedData().volume;
@@ -121,33 +110,43 @@ void ofApp::keyPressed(int key){
 	// Post Effect enable/disable
 	case 'q': // Bloom
 		isBloom = !isBloom;
+		stateMachine.getSharedData().post[0]->setEnabled(isBloom);
 		break;
 	case 'w': // Edge
 		isEdge = !isEdge;
+		stateMachine.getSharedData().post[1]->setEnabled(isEdge);
 		break;
 	case 'e': // Dof
 		isDof = !isDof;
+		stateMachine.getSharedData().post[2]->setEnabled(isDof);
 		break;
 	case 'r': // NoiseWarp
 		isNoiseWarp = !isNoiseWarp;
+		stateMachine.getSharedData().post[3]->setEnabled(isNoiseWarp);
 		break;
 	case 't': // Pixelate
 		isPixelate = !isPixelate;
+		stateMachine.getSharedData().post[4]->setEnabled(isPixelate);
 		break;
 	case 'y': // RGBShift
 		isRGBShift = !isRGBShift;
+		stateMachine.getSharedData().post[5]->setEnabled(isRGBShift);
 		break;
 	case 'u': // ZoomBlur
 		isZoomBlur = !isZoomBlur;
+		stateMachine.getSharedData().post[6]->setEnabled(isZoomBlur);
 		break;
 	case 'i': // Godray
 		isGodray = !isGodray;
+		stateMachine.getSharedData().post[7]->setEnabled(isGodray);
 		break;
 	case 'o':
 		isInvert = !isInvert;
+		stateMachine.getSharedData().post[8]->setEnabled(isInvert);
 		break;
 	case 'p':
 		isGlitch = !isGlitch;
+		stateMachine.getSharedData().post[9]->setEnabled(isGlitch);
 	}
 }
 

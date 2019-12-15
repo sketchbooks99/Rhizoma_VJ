@@ -1,7 +1,11 @@
 #include "subApp.h"
 
 void subApp::setup() {
-	fbo.allocate(1280, 720);
+	
+	fbo.allocate(ofGetWidth(), ofGetHeight());
+	//ofSetWindowPosition(ofGetScreenWidth()+1, 0);
+	//ofToggleFullscreen();
+	//ofSetFullscreen(true);
 }
 
 void subApp::draw() {
@@ -9,4 +13,9 @@ void subApp::draw() {
 }
 
 void subApp::keyPressed(int key) {
+	if (key == 'l') {
+		cout << ofGetWindowPositionX() << endl;
+		cout << ofGetWindowPositionY() << endl;
+		ofToggleFullscreen();
+	}
 }

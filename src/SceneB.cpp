@@ -19,7 +19,7 @@ void SceneB::setup() {
 	box = ofBoxPrimitive(wallSize.x, wallSize.y, wallSize.z).getMesh();
 	attractor = ofSpherePrimitive(1, 16);
 
-	numFish = 1024 * 8;
+	numFish = 1024 * 4;
 	// texRes = int(sqrt(float(numFish)));
 	piramid = createPiramid(ofRandom(1, 3));
 	 //piramid = ofBoxPrimitive(5, 5, 5).getMesh();
@@ -171,7 +171,7 @@ void SceneB::update() {
 
 	instancingShader.begin();
 	instancingShader.setUniformTexture("posTex", posTex, 0);
-	instancingShader.setUniform3f("scale", 1, 1, 3);
+	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.5, getSharedData().volume * 8.0));
 	piramid.drawInstanced(OF_MESH_FILL, numFish);
 	instancingShader.end();
 

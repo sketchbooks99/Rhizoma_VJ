@@ -67,6 +67,7 @@ void ofApp::setup() {
 	settings.numOutputChannels = 0;
 	settings.numInputChannels = 2;
 	settings.bufferSize = 256;
+	settings.setApi(ofSoundDevice::MS_DS);
 	soundStream.setup(settings);
 }
 

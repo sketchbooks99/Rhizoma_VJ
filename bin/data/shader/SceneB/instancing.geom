@@ -7,6 +7,8 @@ layout(triangle_strip, max_vertices = 12) out;
 
 uniform bool isInvert;
 
+in vec4 geomColor[];
+
 out vec3 vNormal;
 out vec4 vColor;
 
@@ -30,7 +32,8 @@ void main() {
         vec3 newVertex = gl_in[i].gl_Position.xyz * 0.5 + center * 0.5 + normal * 0.03;
         gl_Position = modelViewProjectionMatrix * vec4(newVertex, 1.0);
         vNormal = normal;
-        vColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+        // vColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+        vColor = geomColor[0];
         EmitVertex();
     }
     EndPrimitive();

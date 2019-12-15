@@ -96,9 +96,12 @@ void SceneB::setup() {
 	timeOffsets.push_back(ofVec3f(0.2));
 	for(int i = 0; i < 3; i++) {
 		ofVec3f radius;
-		radius.x = ofRandom(wallSize.x / 3, wallSize.x);
-		radius.y = ofRandom(wallSize.y / 3, wallSize.y);
-		radius.z = ofRandom(wallSize.z / 3, wallSize.z);
+		/*radius.x = ofRandom(wallSize.x / 2, wallSize.x * 2);
+		radius.y = ofRandom(wallSize.y / 2, wallSize.y * 2);
+		radius.z = ofRandom(wallSize.z / 2, wallSize.z * 2);*/
+		radius.x = ofRandom(wallSize.x, wallSize.x * 3);
+		radius.y = ofRandom(wallSize.y, wallSize.y * 3);
+		radius.z = ofRandom(wallSize.z, wallSize.z * 3);
 		camRadiuses.push_back(radius);
 
 		ofVec3f offset;
@@ -236,6 +239,7 @@ void SceneB::scene1() {
 	instancingShader.setUniformTexture("posTex", posTex, 0);
 	instancingShader.setUniform1i("isInvert", getSharedData().post[8]->getEnabled());
 	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.7, getSharedData().volume * 10.0));
+	instancingShader.setUniform1i("numFish", numFish);
 	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
 	piramid.drawInstanced(OF_MESH_FILL, numFish);
 	instancingShader.end();
@@ -267,7 +271,7 @@ void SceneB::scene2() {
 	curlCompute.begin();
 	curlCompute.setUniform1f("time", time);
 	curlCompute.setUniform1f("timestep", 0.01);
-	curlCompute.setUniform1f("scale", 0.01);
+	curlCompute.setUniform1f("scale", 0.005);
 	curlCompute.dispatchCompute((boids.size() + 1024 - 1) / 1024, 1, 1);
 	curlCompute.end();
 
@@ -297,6 +301,7 @@ void SceneB::scene2() {
 	instancingShader.setUniformTexture("posTex", posTex, 0);
 	instancingShader.setUniform1i("isInvert", getSharedData().post[8]->getEnabled());
 	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.5, getSharedData().volume * 8.0));
+	instancingShader.setUniform1i("numFish", numFish);
 	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
 	piramid.drawInstanced(OF_MESH_FILL, numFish);
 	instancingShader.end();

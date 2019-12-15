@@ -33,8 +33,9 @@ class ofApp : public ofBaseApp{
 		ofxToggle isKicked;
 		ofxPanel gui;
 
+		// Sound
 		ofSoundStream soundStream;
-		float smoothedVol;
+		float smoothedVol, curVol;
 		float kickThreshold, minimumThreshold, decayRate;
 
 		shared_ptr<subApp> sub;

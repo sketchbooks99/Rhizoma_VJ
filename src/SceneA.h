@@ -39,6 +39,7 @@ public:
 		dir = ofVec2f(ofRandom(-1.0, 1.0), ofRandom(-1.0, 1.0)).normalized();
 		initSpeed = nowSpeed = ofRandom(2, 5);
 		buf = ofVec2f(ofRandom(-1.0, 1.0), ofRandom(-1.0, 1.0));
+		speedUpTime = 0;
 
 		inner.setCircleResolution(_res);
 		inner.setColor(_color);

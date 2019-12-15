@@ -49,9 +49,11 @@ void main() {
     if (age >= maxAge) {
         age = 0.0;
 		maxAge = 1.0;
-		vec3 startPos = vec3(0.0);
-		pos.xyz = (vec3(random(pos.xx), random(pos.yy), random(pos.zz)) - 0.5) * 50.0;
-		vel.xyz = normalize(pos);
+        float theta = 2.0 * PI * random(pos.yy);
+        float phi = PI * random(pos.zz);
+        float r = random(pos.xy);
+		pos = vec3(r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)) * 20.0;
+		vel = normalize(pos);
     }
 
     vel.x += snoise(vec4(pos.x * scale, pos.y * scale, pos.z * scale, 0.1353 * time * timestep));

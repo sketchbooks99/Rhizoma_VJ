@@ -69,6 +69,7 @@ void ofApp::setup() {
 	decayRate = 0.05;
 	minimumThreshold = 0.1;
 	kickThreshold = minimumThreshold;
+	curVol = 0.0;
 }
 
 //--------------------------------------------------------------
@@ -202,7 +203,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 //--------------------------------------------------------------
 void ofApp::audioIn(ofSoundBuffer & input) {
-	float curVol = 0.0;
+	curVol = 0.0;
 	int numCounted = 0;
 	for(int i = 0; i < input.getNumFrames(); i++) {
 		float left = input[i * 2] * 0.5;

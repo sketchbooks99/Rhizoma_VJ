@@ -2,6 +2,7 @@
 
 uniform mat4 modelViewProjectionMatrix;
 uniform vec3 scale;
+uniform int numFish;
 
 in vec4 position;
 
@@ -13,6 +14,8 @@ struct Boids {
 layout(std430, binding=1) buffer boids {
     Boids b[];
 };
+
+out vec4 geomColor;
 
 mat4 eulerAngleToRotationMatrix(vec3 angles) {
     float ch = cos(angles.y); float sh = sin(angles.y); // heading
@@ -26,6 +29,16 @@ mat4 eulerAngleToRotationMatrix(vec3 angles) {
         -sh * ca + ch * sb * sa, sh * sa + ch * sb * ca, ch * cb, 0,
         0, 0, 0, 1
     ); 
+}
+
+// ref: https://qiita.com/null_tokyo/items/0f453a6b157c0b5dc802
+vec3 hsb2rgb( vec3 c ){
+    vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),
+                    6.0)-3.0)-1.0,
+                    0.0,
+                    1.0 );
+    rgb = rgb*rgb*(3.0-2.0*rgb);
+    return c.z * mix(vec3(1.0), rgb, c.y);
 }
 
 void main() {
@@ -43,4 +56,5 @@ void main() {
     vec3 pos = (obj2world * position).xyz;// + boid.pos;
 
     gl_Position = vec4(pos, 1.0);
+    geomColor = vec4(hsb2rgb(vec3(float(gl_InstanceID) / numFish, 1.0, 1.0)), 1.0);
 }

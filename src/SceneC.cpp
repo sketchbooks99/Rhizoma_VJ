@@ -160,8 +160,22 @@ void SceneC::createRenderBuffer() {
 
 	renderFbo.createAndAttachTexture(GL_RGB32F, 1);
 }
+//--------------------------------------------------------------
+void SceneC::keyPressed(int key) {
+	switch (key) {
+	// Camera change
+	case 'a':
+		break;
+	// Local Scene change
+	case 's':
+		sceneIdx = (sceneIdx + 1) % 3;
+		break;
+
+	}
+}
 
 //--------------------------------------------------------------
 string SceneC::getName() {
 	return "SceneC";
 }
+

@@ -3,6 +3,7 @@
 #include "SceneB.h"
 #include "SceneC.h"
 #include "SceneD.h"
+#include "Debug.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -16,6 +17,7 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.setPosition(10, 10);
 	stateMachine.getSharedData().gui.add(isBloom.setup("Bloom", false));
 	stateMachine.getSharedData().gui.add(isEdge.setup("Edge", false));
+	stateMachine.getSharedData().gui.add(isRotate.setup("Rotate", false));
 	stateMachine.getSharedData().gui.add(isNoiseWarp.setup("NoiseWarp", false));
 	stateMachine.getSharedData().gui.add(isPixelate.setup("Pixelate", false));
 	stateMachine.getSharedData().gui.add(isRGBShift.setup("RGBShift", false));
@@ -23,7 +25,6 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.add(isGodray.setup("Godray", false));
 	stateMachine.getSharedData().gui.add(isInvert.setup("Invert", false));
 	stateMachine.getSharedData().gui.add(isGlitch.setup("Glitch", false));
-	stateMachine.getSharedData().gui.add(isRotate.setup("Rotate", false));
 	stateMachine.getSharedData().gui.add(sound.set("Sound", 0, 0, 1));
 	stateMachine.getSharedData().gui.add(fps.set("fps", 60, 0, 60));
 	stateMachine.getSharedData().gui.add(isKicked.setup("isKick", false));
@@ -34,6 +35,8 @@ void ofApp::setup() {
 	stateMachine.getSharedData().bloom->setEnabled(isBloom);
 	stateMachine.getSharedData().edge = stateMachine.getSharedData().post.createPass<EdgePass>();
 	stateMachine.getSharedData().edge->setEnabled(isEdge);
+	stateMachine.getSharedData().rotate = stateMachine.getSharedData().post.createPass<Rotate>();
+	stateMachine.getSharedData().rotate->setEnabled(isRotate);
 	stateMachine.getSharedData().noiseWarp = stateMachine.getSharedData().post.createPass<NoiseWarpPass>();
 	stateMachine.getSharedData().noiseWarp->setEnabled(isNoiseWarp);
 	stateMachine.getSharedData().pixelate = stateMachine.getSharedData().post.createPass<PixelatePass>();
@@ -48,8 +51,6 @@ void ofApp::setup() {
 	stateMachine.getSharedData().invert->setEnabled(isInvert);
 	stateMachine.getSharedData().glitch = stateMachine.getSharedData().post.createPass<Glitch>();
 	stateMachine.getSharedData().glitch->setEnabled(isGlitch);
-	stateMachine.getSharedData().rotate = stateMachine.getSharedData().post.createPass<Rotate>();
-	stateMachine.getSharedData().rotate->setEnabled(isRotate);
 
 	stateMachine.getSharedData().fbo.allocate(ofGetWidth(), ofGetHeight());
 
@@ -57,6 +58,7 @@ void ofApp::setup() {
 	stateMachine.addState<SceneB>();
 	stateMachine.addState<SceneC>();
 	stateMachine.addState<SceneD>();
+	stateMachine.addState<Debug>();
 	stateMachine.changeState("SceneA");
 
 	// Sound setup
@@ -89,6 +91,17 @@ void ofApp::update(){
 
 	sound = stateMachine.getSharedData().volume;
 	fps = ofGetFrameRate();
+
+	isBloom = stateMachine.getSharedData().bloom->getEnabled();
+	isEdge = stateMachine.getSharedData().edge->getEnabled();
+	isRotate = stateMachine.getSharedData().rotate->getEnabled();
+	isNoiseWarp = stateMachine.getSharedData().noiseWarp->getEnabled();
+	isPixelate = stateMachine.getSharedData().pixelate->getEnabled();
+	isRGBShift = stateMachine.getSharedData().rgbShift->getEnabled();
+	isZoomBlur = stateMachine.getSharedData().zoomBlur->getEnabled();
+	isGodray = stateMachine.getSharedData().godray->getEnabled();
+	isInvert = stateMachine.getSharedData().invert->getEnabled();
+	isGlitch = stateMachine.getSharedData().glitch->getEnabled();
 }
 
 //--------------------------------------------------------------
@@ -105,13 +118,15 @@ void ofApp::keyPressed(int key){
 		break;
 	case '2':
 		stateMachine.changeState("SceneB");
-		isBloom = true;
 		break;
 	case '3':
 		stateMachine.changeState("SceneC");
 		break;
 	case '4':
 		stateMachine.changeState("SceneD");
+		break;
+	case '5':
+		stateMachine.changeState("Debug");
 		break;
 	case ' ':
 		ofToggleFullscreen();

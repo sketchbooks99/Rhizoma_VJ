@@ -5,6 +5,7 @@
 #include "SharedData.h"
 #include "ofxPostProcessing.h"
 #include "subApp.h"
+#include "ofxBvh.h"
 #include "ofxGui.h"
 
 class ofApp : public ofBaseApp{

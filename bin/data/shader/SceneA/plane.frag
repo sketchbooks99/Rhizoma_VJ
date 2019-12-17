@@ -16,5 +16,5 @@ void main() {
     vec3 ambient = vColor.rgb * 0.3;
     vec3 destColor = ambient + diffuse + specular * 0.5;
 
-    fragColor = vec4(destColor, 1.0);
+    fragColor = vec4(destColor, vColor.a);
 }

@@ -2,8 +2,6 @@
 
 // =========================================================================================
 void SceneA::setup() {
-	// Bloom set
-	getSharedData().bloom->setStrength(1.0);
 
 	ofEnableAntiAliasing();
 
@@ -19,11 +17,11 @@ void SceneA::setup() {
 	occludeFbo.allocate(rs);
 	volumetricFbo.allocate(rs);
 	//rs.numSamples = 16;
-	rs.useDepth = false;
+	/*rs.useDepth = false;
 	rs.depthStencilAsTexture = false;
 	rs.useStencil = false;
 	rs.numSamples = 4;
-	renderFbo.allocate(rs);
+	renderFbo.allocate(rs);*/
 
 	// Init circles
 	for (unsigned int i = 0; i < 100; i++) {
@@ -42,6 +40,8 @@ void SceneA::setup() {
 	renderShader.load("shader/SceneA/render.vert", "shader/SceneA/render.frag");
 	volumetricShader.load("shader/SceneA/volumetric.vert", "shader/SceneA/volumetric.frag");
 	planeShader.load("shader/SceneA/plane.vert", "shader/SceneA/plane.frag", "shader/SceneA/plane.geom");
+	dancerShader.load("shader/SceneA/dancer.vert", "shader/SceneA/dancer.frag", "shader/SceneA/dancer.geom");
+	pixelizeDancer.load("shader/SceneA/pixelizeDancer.vert", "shader/SceneA/pixelizeDancer.frag", "shader/SceneA/pixelizeDancer.geom");
 
 	// Init custom GUI
 	gui.setup();
@@ -57,7 +57,7 @@ void SceneA::setup() {
 	camPoses = { ofVec3f(0, -2000, 0), ofVec3f(0, -1000, 2000) };
 	camIdx = 0;
 	sceneMode = 0;
-	myCam.setDistance(150);
+	cam.setDistance(150);
 
 	// Geometry settings
 	plane = ofPlanePrimitive(100, 100, 30, 30).getMesh();
@@ -66,10 +66,22 @@ void SceneA::setup() {
 			plane.addTexCoord(ofVec2f(x, y) / 30);
 		}
 	}
+
+	// Sphere man
+	sphere = ofSpherePrimitive(2, 16).getMesh();
+	filename = "bvh01-09/05/05_05.bvh";
+	bvh = ofxBvh(filename);
+	bvh.setLoop(true);
+	bvh.play();
 }
 
 // =========================================================================================
 void SceneA::update() {
+	// Bloom set
+	getSharedData().bloom->setStrength(1.0);
+	getSharedData().bloom->setEnabled(false);
+	// Scene update
+	bvh.update();
 	time = getSharedData().time;
 
 	if (getSharedData().isKicked) planeHeight = 10.0;
@@ -79,7 +91,7 @@ void SceneA::update() {
 		scene1();
 	}
 	else if (sceneMode == 1) {
-		scene2();
+		scene4();
 	}
 
 	getSharedData().fbo.begin();
@@ -99,14 +111,14 @@ void SceneA::draw() {
 // =========================================================================================
 // rotating circle
 void SceneA::scene3() {
-	myCam.customSetPosition(ofVec3f(0, -2000, 0), ofVec3f(0, 0, 0));
+	cam.customSetPosition(ofVec3f(0, -2000, 0), ofVec3f(0, 0, 0));
 
 	// rendering pass
 	renderFbo.begin();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	myCam.begin();
+	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
 	ofPushMatrix();
@@ -123,7 +135,7 @@ void SceneA::scene3() {
 	ofDisableAlphaBlending();
 
 	glDisable(GL_DEPTH_TEST);
-	myCam.end();
+	cam.end();
 
 	renderFbo.end();
 
@@ -137,12 +149,12 @@ void SceneA::scene3() {
 // =========================================================================================
 // circle Burst
 void SceneA::scene2() {
-	myCam.customSetPosition(camPoses[camIdx], ofVec3f(0, 0, 0));
+	cam.customSetPosition(camPoses[camIdx], ofVec3f(0, 0, 0));
 
 	// Occluding Rendering Pass
 	occludeFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	myCam.begin();
+	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
 	ofPushMatrix();
@@ -162,7 +174,7 @@ void SceneA::scene2() {
 	ofPopMatrix();
 
 	glDisable(GL_DEPTH_TEST);
-	myCam.end();
+	cam.end();
 	occludeFbo.end();
 
 	// Normal Rendering Pass
@@ -170,7 +182,7 @@ void SceneA::scene2() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	myCam.begin();
+	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
 	ofPushMatrix();
@@ -186,7 +198,7 @@ void SceneA::scene2() {
 	ofDisableAlphaBlending();
 
 	glDisable(GL_DEPTH_TEST);
-	myCam.end();
+	cam.end();
 
 	normalFbo.end();
 
@@ -222,7 +234,10 @@ void SceneA::scene2() {
 }
 // =========================================================================================
 void SceneA::scene1() {
-	//myCam.customSetPosition(ofVec3f(100, 100, 200), ofVec3f(0, 0, 0));
+	//cam.customSetPosition(ofVec3f(100, 100, 200), ofVec3f(0, 0, 0));
+	float radius = 100;
+	cam.setPosition(sin(time * 0.1) * radius, -10, cos(time * 0.2) * radius);
+	cam.lookAt(ofVec3f(0, 0, 0));
 
 	// Occluding rendering pass
 
@@ -231,11 +246,11 @@ void SceneA::scene1() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
-	myCam.begin();
+	cam.begin();
 
 	ofMatrix4x4 model;
 	ofMatrix4x4 view = ofGetCurrentViewMatrix();
-	ofMatrix4x4 projection = myCam.getProjectionMatrix();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
 	ofMatrix4x4 mvpMatrix = model * view * projection;
 	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
 
@@ -255,9 +270,74 @@ void SceneA::scene1() {
 
 	ofPopMatrix();
 
-	myCam.end();
+	cam.end();
 
 	glDisable(GL_DEPTH_TEST);
+	renderFbo.end();
+
+	getSharedData().post.begin();
+	renderFbo.draw(0, 0);
+	getSharedData().post.end();
+}
+// =========================================================================================
+void SceneA::scene4() {
+	float radius = 100;
+	cam.setPosition(sin(time * 0.1) * radius, -10, cos(time * 0.2) * radius);
+	cam.lookAt(ofVec3f(0, 0, 0));
+
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	cam.begin();
+	glEnable(GL_DEPTH_TEST);
+
+	// Draw Floor
+	ofMatrix4x4 model;
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+
+	ofPushMatrix();
+
+	ofRotateXDeg(90);
+
+	plane.draw(OF_MESH_WIREFRAME);
+
+	planeShader.begin();
+	planeShader.setUniform1f("intensity", getSharedData().volume);
+	planeShader.setUniform1i("isWhite", false);
+	planeShader.setUniform1f("planeHeight", planeHeight);
+	planeShader.setUniformMatrix4f("invMatrix", invMatrix);
+	planeShader.setUniform1f("time", time);
+	plane.draw(OF_MESH_FILL);
+	planeShader.end();
+
+	ofPopMatrix();
+
+	dancerShader.begin();
+	for (int i = 0; i < bvh.getJoints().size(); i++) {
+		//ofMatrix4x4 m = bvh.getJoints()[i]->localMat;
+		//ofPushMatrix();
+		/*float angle;
+		ofVec3f axis;
+		m.getRotate().getRotate(angle, axis);
+		ofScale(1, -1, 1);*/
+
+		model = ofMatrix4x4();
+		model.translate(bvh.getJoints()[i]->getPosition() * 0.2);
+		mvpMatrix = model * view * projection;
+		invMatrix = mvpMatrix.getInverse();
+
+		dancerShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
+		dancerShader.setUniformMatrix4f("invMatrix", invMatrix);
+		//ofRotate(angle, axis.x, axis.y, axis.z);
+		sphere.draw(OF_MESH_FILL);
+		//ofPopMatrix();
+	}
+	dancerShader.end();
+
+	glDisable(GL_DEPTH_TEST);
+	cam.end();
 	renderFbo.end();
 
 	getSharedData().post.begin();
@@ -285,8 +365,8 @@ void SceneA::keyPressed(int key) {
 			NUM_BRIGHT = 100;
 			break;
 		}
-		myCam.setShakeTime(0.1);
-		//myCam.startThread();
+		cam.setShakeTime(0.1);
+		//cam.startThread();
 		for (int i = 0; i < NUM_BRIGHT; i++) {
 			int idx = int(ofRandom(0, circles.size()));
 			circles[idx].setIntensity(0.4f);

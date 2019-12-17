@@ -9,6 +9,7 @@ uniform mat4 modelViewProjectionMatrix;
 uniform float intensity;
 uniform bool isWhite;
 uniform float planeHeight;
+uniform float time;
 
 in Vertex {
     vec2 texcoord;
@@ -48,7 +49,7 @@ void main() {
     vec3 normal = normalize(cross(b,a));
 
     vec2 uv = vertex[0].texcoord;
-    float n = cnoise(uv * 100.0);
+    float n = cnoise(uv * 100.0 + time);
     for(int i = 0; i < gl_in.length(); i++) {
         gl_Position = modelViewProjectionMatrix * gl_in[i].gl_Position;
         vColor = n > 0.5 ? vec4(1.0) : vec4(0.0);

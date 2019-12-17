@@ -1,6 +1,6 @@
-#include "SceneC.h"
+#include "SceneE.h"
 
-void SceneC::setup() {
+void SceneE::setup() {
 	ofBackground(0);
 	ofSetCircleResolution(64);
 	//ofSetFrameRate(60);
@@ -36,7 +36,7 @@ void SceneC::setup() {
 
 }
 
-void SceneC::update() {
+void SceneE::update() {
 	time = getSharedData().time;
 
 	for (int i = 0; i < planeMesh.getVertices().size(); i++) {
@@ -86,10 +86,10 @@ void SceneC::update() {
 	getSharedData().post.end();
 }
 
-void SceneC::draw() {
+void SceneE::draw() {
 	getSharedData().post.draw(0, 0);
 }
 
-string SceneC::getName() {
-	return "SceneC";
+string SceneE::getName() {
+	return "SceneE";
 }

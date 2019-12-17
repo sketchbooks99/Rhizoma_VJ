@@ -72,7 +72,7 @@ void main() {
 	float rLen = 0.0;
 	vec3 rPos = cPos;
 
-	for(int i = 0; i < 64; i++) {
+	for(int i = 0; i < 128; i++) {
 		distance = distanceFunc(rPos);
 		rLen += distance;
 		rPos = cPos + ray * rLen;
@@ -91,13 +91,12 @@ void main() {
 //		float zc = (modelViewProjectionMatrix * vec4(rPos, 1.0)).z;
 //		float wc = (modelViewProjectionMatrix * vec4(rPos, 1.0)).w;
 		gl_FragDepth = d;
-    }
-	// } else {
-	// 	gPosition = vec4(0.0, 0.0, 0.0, 1.0);
-	// 	gNormal = vec4(0.0, 0.0, 0.0, 1.0);
-	// 	gColor = vec4(0.0, 0.0, 0.0, 1.0);
-	// 	gl_FragDepth = 1.0;
-	// }
+    } else {
+		gPosition = vec4(0.0, 0.0, 0.0, 1.0);
+		gNormal = vec4(0.0, 0.0, 0.0, 1.0);
+		gColor = vec4(0.0, 0.0, 0.0, 1.0);
+		gl_FragDepth = 1.0;
+	}
 
 }
 		

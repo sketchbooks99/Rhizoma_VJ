@@ -2,6 +2,7 @@
 
 #include "ofxPostProcessing.h"
 #include "ofxGui.h"
+#include "ofxBvh.h"
 
 class myCamera : public ofEasyCam {
 private:

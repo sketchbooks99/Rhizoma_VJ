@@ -7,6 +7,7 @@ class SceneC : public itg::ofxState<SharedData> {
 	void setup();
 	void update();
 	void draw();
+	void keyPressed(int key);
 	string getName();
 
 	// Custom Functions

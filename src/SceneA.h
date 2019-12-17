@@ -127,7 +127,7 @@ private:
 	void scene4();
 
 	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo;
-	myCamera myCam;
+	myCamera cam;
 	ofShader renderShader, volumetricShader, planeShader;
 
 	ofxPanel gui;
@@ -146,4 +146,11 @@ private:
 
 	ofVboMesh plane;
 	float planeHeight;
+
+	// Bvh
+	ofxBvh bvh; 
+	ofVboMesh sphere;
+	vector<string> filenames;
+	string filename;
+	ofShader dancerShader, pixelizeDancer;
 };

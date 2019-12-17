@@ -167,10 +167,27 @@ void SceneC::keyPressed(int key) {
 	case 'a':
 		break;
 	// Local Scene change
-	case 's':
-		sceneIdx = (sceneIdx + 1) % 3;
+	case 'z':
+		sceneMode = 0;
 		break;
-
+	case 'x':
+		sceneMode = 1;
+		break;
+	case 'c':
+		sceneMode = 2;
+		break;
+	case 'v':
+		sceneMode = 3;
+		break;
+	case 'b':
+		sceneMode = 4;
+		break;
+	case 'n':
+		sceneMode = 5;
+		break;
+	case 'm':
+		sceneMode = 6;
+		break;
 	}
 }
 

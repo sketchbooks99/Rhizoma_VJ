@@ -5,11 +5,13 @@
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 36) out;
 
-uniform mat4 modelViewProjectionMatrix;
+// uniform mat4 modelViewProjectionMatrix;
+uniform mat4 mvpMatrix;
 uniform float intensity;
 uniform bool isWhite;
 uniform float planeHeight;
 uniform float time;
+uniform int threshold;
 
 in Vertex {
     vec2 texcoord;
@@ -52,7 +54,7 @@ void main() {
     float n = cnoise(uv * 100.0 + time);
     for(int i = 0; i < gl_in.length(); i++) {
         gl_Position = modelViewProjectionMatrix * gl_in[i].gl_Position;
-        vColor = n > 0.5 ? vec4(1.0) : vec4(0.0);
+        vColor = n > threshold ? vec4(1.0) : vec4(0.0);
         vNormal = normal;
         // vColor = vec4(n);
         EmitVertex();

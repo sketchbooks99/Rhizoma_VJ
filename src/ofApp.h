@@ -7,6 +7,7 @@
 #include "subApp.h"
 #include "ofxBvh.h"
 #include "ofxGui.h"
+#include "ofxFBX.h"
 
 class ofApp : public ofBaseApp{
 
@@ -29,9 +30,9 @@ class ofApp : public ofBaseApp{
 		void audioIn(ofSoundBuffer & input);
 		
 		itg::ofxStateMachine<SharedData> stateMachine; 
-		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert, isGlitch, isRotate;
+		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isZoomBlur, isInvert, isGlitch, isRotate;
 		ofParameter<float> sound, fps;
-		ofxToggle isKicked;
+		ofxToggle isKicked, isZoomBlurReactive, isGlitchReactive;
 		ofxPanel gui;
 
 		// Sound

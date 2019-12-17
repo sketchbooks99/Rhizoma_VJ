@@ -3,6 +3,7 @@
 #include "ofxState.h"
 #include "SharedData.h"
 #include "ofxGui.h"
+#include "ofxFBX.h"
 //class myCamera : public ofEasyCam{
 //private:
 //	float shakeTime;
@@ -125,6 +126,7 @@ private:
 	void scene2();
 	void scene3();
 	void scene4();
+	void sceneBurst();
 
 	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo;
 	myCamera cam;
@@ -132,10 +134,7 @@ private:
 
 	ofxPanel gui;
 	ofParameter<float> density, weight, decay, exposure, screenY;
-
-	// circles
-	vector<Circle> circles;
-	vector<Circle> effectCircles;
+	ofxToggle isColored, isPixeled, isReactive;
 
 	// camera
 	vector<ofVec3f> camPoses;
@@ -152,5 +151,7 @@ private:
 	ofVboMesh sphere;
 	vector<string> filenames;
 	string filename;
-	ofShader dancerShader, pixelizeDancer;
+	ofShader dancerShader, pixelizeDancer, bufferShader, copy;
+	ofBufferObject posBuffer;
+	ofTexture posTex;
 };

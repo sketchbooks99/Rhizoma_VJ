@@ -3,7 +3,6 @@
 // =========================================================================================
 void SceneB::setup() {
 	// Post effect settings
-	getSharedData().bloom->setStrength(3.0);
 
 	ofFbo::Settings rs; // render settings
 	rs.width = ofGetWidth();
@@ -361,11 +360,30 @@ ofVboMesh SceneB::createPiramid(float scale) {
 void SceneB::keyPressed(int key) {
 	switch (key) {
 	case 'a':
-		if(sceneMode == 0) attIdx = (int)ofRandom(0, attractorPoses.size());
-		else if(sceneMode == 1) camIdx = (int)ofRandom(0, 4);
- 		break;
-	case 's':
-		sceneMode = (int)ofRandom(0, 2);  
+		if (sceneMode == 0) attIdx = (int)ofRandom(0, attractorPoses.size());
+		else if (sceneMode == 1) camIdx = (int)ofRandom(0, 4);
+		break;
+	case 'z':
+		sceneMode = 0;
+		break;
+	case 'x':
+		sceneMode = 1;
+		break;
+	case 'c':
+		sceneMode = 2;
+		break;
+	case 'v':
+		sceneMode = 3;
+		break;
+	case 'b':
+		sceneMode = 4;
+		break;
+	case 'n':
+		sceneMode = 5;
+		break;
+	case 'm':
+		sceneMode = 6;
+		break;
 	}
 }
 

@@ -1,4 +1,5 @@
 ofxBvh
+ofxFBX
 ofxGui
 ofxOsc
 ofxPostProcessing1

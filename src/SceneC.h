@@ -36,7 +36,7 @@ class SceneC : public itg::ofxState<SharedData> {
 
 	// General parameters
 	float time;
-	int sceneIdx;
+	int sceneMode;
 	myCamera cam;
 
 	// Geometry

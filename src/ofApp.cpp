@@ -33,6 +33,7 @@ void ofApp::setup() {
 	stateMachine.getSharedData().post.setFlip(false);
 	stateMachine.getSharedData().bloom = stateMachine.getSharedData().post.createPass<BloomPass>();
 	stateMachine.getSharedData().bloom->setEnabled(isBloom);
+	stateMachine.getSharedData().bloom->setStrength(1.0f);
 	stateMachine.getSharedData().edge = stateMachine.getSharedData().post.createPass<EdgePass>();
 	stateMachine.getSharedData().edge->setEnabled(isEdge);
 	stateMachine.getSharedData().rotate = stateMachine.getSharedData().post.createPass<Rotate>();
@@ -60,6 +61,8 @@ void ofApp::setup() {
 	stateMachine.addState<SceneD>();
 	stateMachine.addState<Debug>();
 	stateMachine.changeState("SceneA");
+
+	stateMachine.getSharedData().bloom->setEnabled(false);
 
 	// Sound setup
 	//soundStream.setup(this, 0, 2, 44100, 256);
@@ -90,6 +93,11 @@ void ofApp::update(){
 	sub->fbo = stateMachine.getSharedData().fbo;
 
 	sound = stateMachine.getSharedData().volume;
+
+	stateMachine.getSharedData().rgbShift->setAmount(stateMachine.getSharedData().volume);
+	if (isZoomBlurReactive) {
+		stateMachine.getSharedData().zoomBlur->setEnabled(stateMachine.getSharedData().isKicked);
+	}
 	fps = ofGetFrameRate();
 
 	isBloom = stateMachine.getSharedData().bloom->getEnabled();
@@ -118,6 +126,8 @@ void ofApp::keyPressed(int key){
 		break;
 	case '2':
 		stateMachine.changeState("SceneB");
+		stateMachine.getSharedData().bloom->setEnabled(true);
+		stateMachine.getSharedData().bloom->setStrength(3.5);
 		break;
 	case '3':
 		stateMachine.changeState("SceneC");
@@ -127,9 +137,6 @@ void ofApp::keyPressed(int key){
 		break;
 	case '5':
 		stateMachine.changeState("Debug");
-		break;
-	case ' ':
-		ofToggleFullscreen();
 		break;
 	// Post Effect enable/disable
 	case 'q': // Bloom

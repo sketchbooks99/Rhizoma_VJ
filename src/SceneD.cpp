@@ -1,5 +1,6 @@
 #include "SceneD.h"
 
+//--------------------------------------------------------------
 void SceneD::setup() {
 	ofBackground(0);
 
@@ -38,6 +39,7 @@ void SceneD::setup() {
 	renderFbo.allocate(rs);
 }
 
+//--------------------------------------------------------------
 void SceneD::update() {
 	time = getSharedData().time;
 	lightDir = ofVec3f(0.577, 0.577, -0.577);
@@ -93,10 +95,42 @@ void SceneD::update() {
 	getSharedData().post.end();
 }
 
+//--------------------------------------------------------------
 void SceneD::draw() {
 	getSharedData().post.draw();
 }
 
+//--------------------------------------------------------------
+void SceneD::keyPressed(int key) {
+	switch (key) {
+	case 'a':
+		break;
+		// Local Scene change
+	case 'z':
+		sceneMode = 0;
+		break;
+	case 'x':
+		sceneMode = 1;
+		break;
+	case 'c':
+		sceneMode = 2;
+		break;
+	case 'v':
+		sceneMode = 3;
+		break;
+	case 'b':
+		sceneMode = 4;
+		break;
+	case 'n':
+		sceneMode = 5;
+		break;
+	case 'm':
+		sceneMode = 6;
+		break;
+	}
+}
+
+//--------------------------------------------------------------
 string SceneD::getName() {
 	return "SceneD";
 }

@@ -8,6 +8,7 @@ public:
 	void setup();
 	void update();
 	void draw();
+	void keyPressed(int key);
 	string getName();
 
 private:
@@ -19,4 +20,5 @@ private:
 	ofVec3f lightDir;
 	float time;
 	ofFbo renderFbo;
+	int sceneMode;
 };

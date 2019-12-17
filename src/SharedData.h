@@ -48,6 +48,9 @@ public:
 	// sound
 	float volume;
 	bool isKicked;
+	vector<float> left;
+	vector<float> right;
+	vector<float> volHistory;
 	/*
 	float *fftSmoothed;
 	float *volume;

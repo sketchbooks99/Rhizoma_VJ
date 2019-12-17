@@ -84,6 +84,9 @@ void ofApp::setup() {
 	settings.bufferSize = 256;
 	settings.setApi(ofSoundDevice::MS_DS);
 	soundStream.setup(settings);
+
+	stateMachine.getSharedData().left.assign(settings.bufferSize, 0.0);
+	stateMachine.getSharedData().right.assign(settings.bufferSize, 0.0);
 }
 
 //--------------------------------------------------------------
@@ -123,6 +126,7 @@ void ofApp::keyPressed(int key){
 		// Scene changing
 	case '1':
 		stateMachine.changeState("SceneA");
+		stateMachine.getSharedData().bloom->setStrength(1.5);
 		break;
 	case '2':
 		stateMachine.changeState("SceneB");
@@ -236,10 +240,10 @@ void ofApp::audioIn(ofSoundBuffer & input) {
 	curVol = 0.0;
 	int numCounted = 0;
 	for(int i = 0; i < input.getNumFrames(); i++) {
-		float left = input[i * 2] * 0.5;
-		float right = input[i * 2 + 1] * 0.5;
-		curVol += left * left;
-		curVol += right * right;
+		stateMachine.getSharedData().left[i] = input[i * 2] * 0.5;
+		stateMachine.getSharedData().right[i] = input[i * 2 + 1] * 0.5;
+		curVol += stateMachine.getSharedData().left[i] * stateMachine.getSharedData().left[i];
+		curVol += stateMachine.getSharedData().right[i] * stateMachine.getSharedData().right[i];
 		numCounted += 2;
 	}
 	curVol /= (float)numCounted;

@@ -143,7 +143,7 @@ private:
 	float time;
 	int sceneMode;
 
-	ofVboMesh plane;
+	ofVboMesh plane, audioPlane;
 	float planeHeight;
 
 	// Bvh

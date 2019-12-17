@@ -10,7 +10,10 @@ uniform mat4 invMatrix;
 uniform float planeHeight;
 
 void main() {
-    if (vColor.a < 0.1) discard;
+    if (vColor.a < 0.1) {
+        fragColor = vec4(vec3(0.0), 1.0);
+        return;
+    }
     // vec3 invLight = normalize(invMatrix * vec4(lightDir, 0.0)).xyz;
     vec3 invLight = lightDir;
 
@@ -19,7 +22,7 @@ void main() {
     vec3 ambient = vColor.rgb * 0.3;
     vec3 destColor = ambient + diffuse + specular * 0.5;
 
-    if (planeHeight <= 0.0) destColor = vec3(1.0);
+    if (planeHeight <= 0.0) destColor = vColor.rgb;
 
     fragColor = vec4(destColor, vColor.a);
 }

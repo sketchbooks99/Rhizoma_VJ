@@ -43,4 +43,6 @@ void main() {
     vec3 a = (gl_in[1].gl_Position - gl_in[0].gl_Position).xyz;
     vec3 b = (gl_in[2].gl_Position - gl_in[0].gl_Position).xyz;
     vec3 normal = normalize(cross(b,a));
+
+    
 }

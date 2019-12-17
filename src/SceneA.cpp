@@ -48,9 +48,10 @@ void SceneA::setup() {
 	cam.setDistance(150);
 
 	// Geometry settings
-	plane = ofPlanePrimitive(100, 100, 10, 10).getMesh();
-	for (int x = 0; x < 30; x++) {
-		for (int y = 0; y < 30; y++) {
+	int xRes = 20, yRes = 20;
+	plane = ofPlanePrimitive(150, 150, xRes, yRes).getMesh();
+	for (int x = 0; x < xRes; x++) {
+		for (int y = 0; y < yRes; y++) {
 			plane.addTexCoord(ofVec2f(x, y) / 30);
 		}
 	}
@@ -74,10 +75,12 @@ void SceneA::update() {
 	else planeHeight -= 0.1;
 
 	if (sceneMode == 0) {
+		isColored = false;
 		scene1();
 	}
 	else if (sceneMode == 1) {
-		scene2();
+		isColored = true;
+		scene1();
 	}
 	else if (sceneMode == 2) {
 		scene3();
@@ -135,7 +138,7 @@ void SceneA::scene1() {
 
 	planeShader.begin();
 	planeShader.setUniform1f("intensity", getSharedData().volume);
-	planeShader.setUniform1i("isWhite", false);
+	planeShader.setUniform1i("isColored", isColored);
 	planeShader.setUniform1f("planeHeight", planeHeight);
 	planeShader.setUniformMatrix4f("invMatrix", invMatrix);
 	planeShader.setUniform1f("time", time);
@@ -161,8 +164,8 @@ void SceneA::scene2() {
 
 // =========================================================================================
 void SceneA::scene3() {
-	float radius = 100;
-	cam.setPosition(sin(time * 0.1) * radius, -10, cos(time * 0.2) * radius);
+	float radius = 50;
+	cam.setPosition(sin(time * 0.3) * radius, -10, cos(time * 0.3) * radius);
 	cam.lookAt(ofVec3f(0, 0, 0));
 
 	renderFbo.begin();
@@ -176,27 +179,25 @@ void SceneA::scene3() {
 	/*ofMatrix4x4 mvpMatrix = model * view * projection;
 	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();*/
 
-	model.rotate(90, 1, 0, 0);
-	ofMatrix4x4 mvpMatrix = model * view * projection;
-	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+	ofPushMatrix();
+	ofRotateXDeg(90);
 	plane.draw(OF_MESH_WIREFRAME);
 
 	planeShader.begin();
 	planeShader.setUniform1f("intensity", getSharedData().volume);
 	planeShader.setUniform1i("isReactive", isReactive);
 	planeShader.setUniform1f("planeHeight", planeHeight);
-	planeShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
-	planeShader.setUniformMatrix4f("invMatrix", invMatrix);
 	planeShader.setUniform1f("time", time);
 	plane.draw(OF_MESH_FILL);
 	planeShader.end();
+	ofPopMatrix();
 
 	dancerShader.begin();
 	for (int i = 0; i < bvh.getJoints().size(); i++) {
 		model = ofMatrix4x4();
 		model.translate(bvh.getJoints()[i]->getPosition() * 0.1);
-		mvpMatrix = model * view * projection;
-		invMatrix = mvpMatrix.getInverse();
+		ofMatrix4x4 mvpMatrix = model * view * projection;
+		ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
 
 		dancerShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
 		sphere.draw(OF_MESH_FILL);
@@ -275,25 +276,25 @@ void SceneA::keyPressed(int key) {
 	case 'a':
 		break;
 	// Change child scene
-	case 'z':
+	case 'z': // simple 
 		sceneMode = 0;
 		break;
-	case 'x':
+	case 'x': // colored start scene
 		sceneMode = 1;
 		break;
-	case 'c':
+	case 'c': // only dance scene
 		sceneMode = 2;
 		break;
-	case 'v':
+	case 'v':  // dance & plane
 		sceneMode = 3;
 		break;
-	case 'b':
+	case 'b': // colored dance & plane
 		sceneMode = 4;
 		break;
-	case 'n':
+	case 'n': // dance & plane reactive(noise, audio, line)
 		sceneMode = 5;
 		break;
-	case 'm':
+	case 'm': 
 		sceneMode = 6;
 		break;
 	}

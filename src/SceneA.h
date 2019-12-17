@@ -121,9 +121,6 @@ public:
 
 private:
 
-	Circle spawnCircle(float xRange, float yRange, ofVec2f sizeRange, ofColor color, bool isBright);
-	void removeCircle(int index);
-
 	void scene1();
 	void scene2();
 	void scene3();
@@ -131,7 +128,7 @@ private:
 
 	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo;
 	myCamera myCam;
-	ofShader renderShader, volumetricShader;
+	ofShader renderShader, volumetricShader, planeShader;
 
 	ofxPanel gui;
 	ofParameter<float> density, weight, decay, exposure, screenY;
@@ -146,4 +143,7 @@ private:
 
 	float time;
 	int sceneMode;
+
+	ofVboMesh plane;
+	float planeHeight;
 };

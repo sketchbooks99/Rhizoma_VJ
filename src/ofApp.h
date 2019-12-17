@@ -28,7 +28,7 @@ class ofApp : public ofBaseApp{
 		void audioIn(ofSoundBuffer & input);
 		
 		itg::ofxStateMachine<SharedData> stateMachine; 
-		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert, isGlitch;
+		ofxToggle isBloom, isEdge, isDof, isGodray, isNoiseWarp, isPixelate, isRGBShift, isRimHighlight, isZoomBlur, isInvert, isGlitch, isRotate;
 		ofParameter<float> sound, fps;
 		ofxToggle isKicked;
 		ofxPanel gui;

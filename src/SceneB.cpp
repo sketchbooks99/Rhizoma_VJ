@@ -2,6 +2,9 @@
 
 // =========================================================================================
 void SceneB::setup() {
+	// Post effect settings
+	getSharedData().bloom->setStrength(3.0);
+
 	ofFbo::Settings rs; // render settings
 	rs.width = ofGetWidth();
 	rs.height = ofGetHeight();

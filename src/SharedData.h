@@ -29,6 +29,17 @@ public:
 class SharedData {
 public:
 	ofxPostProcessing post;
+	BloomPass::Ptr bloom;
+	EdgePass::Ptr edge;
+	DofPass::Ptr dof;
+	NoiseWarpPass::Ptr noiseWarp;
+	PixelatePass::Ptr pixelate;
+	RGBShiftPass::Ptr rgbShift;
+	ZoomBlurPass::Ptr zoomBlur;
+	GodRaysPass::Ptr godray;
+	Invert::Ptr invert;
+	Glitch::Ptr glitch;
+	Rotate::Ptr rotate;
 	ofFbo fbo;
 	ofxPanel gui;
 	float time, fps;

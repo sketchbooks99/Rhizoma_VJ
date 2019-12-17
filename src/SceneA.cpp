@@ -2,19 +2,30 @@
 
 // =========================================================================================
 void SceneA::setup() {
-	ofFbo::Settings rs; // render settings
+	// Bloom set
+	getSharedData().bloom->setStrength(1.0);
+
+	ofEnableAntiAliasing();
+
+	// Render settings
+	ofFbo::Settings rs; 
 	rs.width = ofGetWidth();
 	rs.height = ofGetHeight();
 	rs.useDepth = true;
 	rs.useStencil = true;
 	rs.depthStencilAsTexture = true;
 	rs.textureTarget = GL_TEXTURE_2D;
-	//rs.numSamples = 16;
-	renderFbo.allocate(rs);
 	normalFbo.allocate(rs);
 	occludeFbo.allocate(rs);
 	volumetricFbo.allocate(rs);
+	//rs.numSamples = 16;
+	rs.useDepth = false;
+	rs.depthStencilAsTexture = false;
+	rs.useStencil = false;
+	rs.numSamples = 4;
+	renderFbo.allocate(rs);
 
+	// Init circles
 	for (unsigned int i = 0; i < 100; i++) {
 		unsigned int res = int(ofRandom(3, 20));
 		unsigned int size = int(ofRandom(100, 200));
@@ -26,11 +37,13 @@ void SceneA::setup() {
 		Circle circle = Circle(res, size, pos, color, isBright);
 		circles.push_back(circle);
 	}
-	ofSetLineWidth(20);
 
+	// Load shaders
 	renderShader.load("shader/SceneA/render.vert", "shader/SceneA/render.frag");
 	volumetricShader.load("shader/SceneA/volumetric.vert", "shader/SceneA/volumetric.frag");
+	planeShader.load("shader/SceneA/plane.vert", "shader/SceneA/plane.frag", "shader/SceneA/plane.geom");
 
+	// Init custom GUI
 	gui.setup();
 	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
 	gui.add(density.set("Density", 0.07, 0.0, 1.0));
@@ -39,16 +52,28 @@ void SceneA::setup() {
 	gui.add(exposure.set("exposure", 1.0, 0.0, 1.0));
 	gui.add(screenY.set("ScreenY", -10.0, -10.0, 0.0));
 
+	// General Settings
 	time = getSharedData().time;
 	camPoses = { ofVec3f(0, -2000, 0), ofVec3f(0, -1000, 2000) };
 	camIdx = 0;
-
 	sceneMode = 0;
+	myCam.setDistance(150);
+
+	// Geometry settings
+	plane = ofPlanePrimitive(100, 100, 30, 30).getMesh();
+	for (int x = 0; x < 30; x++) {
+		for (int y = 0; y < 30; y++) {
+			plane.addTexCoord(ofVec2f(x, y) / 30);
+		}
+	}
 }
 
 // =========================================================================================
 void SceneA::update() {
 	time = getSharedData().time;
+
+	if (getSharedData().isKicked) planeHeight = 10.0;
+	else planeHeight -= 0.1;
 
 	if (sceneMode == 0) {
 		scene1();
@@ -72,25 +97,8 @@ void SceneA::draw() {
 }
 
 // =========================================================================================
-Circle SceneA::spawnCircle(float xRange, float yRange, ofVec2f sizeRange, ofColor color, bool isBright = false) {
-	float x = ofRandom(-xRange, xRange);
-	float y = ofRandom(-yRange, yRange);
-	float z = ofRandom(-30, 30);
-	float size = ofRandom(sizeRange.x, sizeRange.y);
-	int res = ofRandom(3);
-
-	return Circle(res, size, ofVec3f(x, y, z), color, isBright);
-}
-
-// =========================================================================================
-void SceneA::removeCircle(int index) {
-
-}
-
-
-// =========================================================================================
 // rotating circle
-void SceneA::scene1() {
+void SceneA::scene3() {
 	myCam.customSetPosition(ofVec3f(0, -2000, 0), ofVec3f(0, 0, 0));
 
 	// rendering pass
@@ -211,6 +219,50 @@ void SceneA::scene2() {
 	renderFbo.draw(0, 0);
 	getSharedData().post.end();
 	//getSharedData().post.end();
+}
+// =========================================================================================
+void SceneA::scene1() {
+	//myCam.customSetPosition(ofVec3f(100, 100, 200), ofVec3f(0, 0, 0));
+
+	// Occluding rendering pass
+
+	// rendering pass
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
+	myCam.begin();
+
+	ofMatrix4x4 model;
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 projection = myCam.getProjectionMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+
+	ofPushMatrix();
+
+	ofRotateXDeg(90);
+
+	plane.draw(OF_MESH_WIREFRAME);
+
+	planeShader.begin();
+	planeShader.setUniform1f("intensity", getSharedData().volume);
+	planeShader.setUniform1i("isWhite", false);
+	planeShader.setUniform1f("planeHeight", planeHeight);
+	planeShader.setUniformMatrix4f("invMatrix", invMatrix);
+	plane.draw(OF_MESH_FILL);
+	planeShader.end();
+
+	ofPopMatrix();
+
+	myCam.end();
+
+	glDisable(GL_DEPTH_TEST);
+	renderFbo.end();
+
+	getSharedData().post.begin();
+	renderFbo.draw(0, 0);
+	getSharedData().post.end();
 }
 // =========================================================================================
 void SceneA::keyPressed(int key) {

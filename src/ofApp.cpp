@@ -16,7 +16,6 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.setPosition(10, 10);
 	stateMachine.getSharedData().gui.add(isBloom.setup("Bloom", false));
 	stateMachine.getSharedData().gui.add(isEdge.setup("Edge", false));
-	stateMachine.getSharedData().gui.add(isDof.setup("Dof", false));
 	stateMachine.getSharedData().gui.add(isNoiseWarp.setup("NoiseWarp", false));
 	stateMachine.getSharedData().gui.add(isPixelate.setup("Pixelate", false));
 	stateMachine.getSharedData().gui.add(isRGBShift.setup("RGBShift", false));
@@ -24,22 +23,33 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.add(isGodray.setup("Godray", false));
 	stateMachine.getSharedData().gui.add(isInvert.setup("Invert", false));
 	stateMachine.getSharedData().gui.add(isGlitch.setup("Glitch", false));
+	stateMachine.getSharedData().gui.add(isRotate.setup("Rotate", false));
 	stateMachine.getSharedData().gui.add(sound.set("Sound", 0, 0, 1));
 	stateMachine.getSharedData().gui.add(fps.set("fps", 60, 0, 60));
 	stateMachine.getSharedData().gui.add(isKicked.setup("isKick", false));
 
 	stateMachine.getSharedData().post.init(ofGetWidth(), ofGetHeight());
 	stateMachine.getSharedData().post.setFlip(false);
-	stateMachine.getSharedData().post.createPass<BloomPass>()->setEnabled(isBloom);
-	stateMachine.getSharedData().post.createPass<EdgePass>()->setEnabled(isEdge);
-	stateMachine.getSharedData().post.createPass<DofPass>()->setEnabled(isDof);
-	stateMachine.getSharedData().post.createPass<NoiseWarpPass>()->setEnabled(isNoiseWarp);
-	stateMachine.getSharedData().post.createPass<PixelatePass>()->setEnabled(isPixelate);
-	stateMachine.getSharedData().post.createPass<RGBShiftPass>()->setEnabled(isRGBShift);
-	stateMachine.getSharedData().post.createPass<ZoomBlurPass>()->setEnabled(isZoomBlur);
-	stateMachine.getSharedData().post.createPass<GodRaysPass>()->setEnabled(isGodray);
-	stateMachine.getSharedData().post.createPass<Invert>()->setEnabled(isInvert);
-	stateMachine.getSharedData().post.createPass<Glitch>()->setEnabled(isGlitch);
+	stateMachine.getSharedData().bloom = stateMachine.getSharedData().post.createPass<BloomPass>();
+	stateMachine.getSharedData().bloom->setEnabled(isBloom);
+	stateMachine.getSharedData().edge = stateMachine.getSharedData().post.createPass<EdgePass>();
+	stateMachine.getSharedData().edge->setEnabled(isEdge);
+	stateMachine.getSharedData().noiseWarp = stateMachine.getSharedData().post.createPass<NoiseWarpPass>();
+	stateMachine.getSharedData().noiseWarp->setEnabled(isNoiseWarp);
+	stateMachine.getSharedData().pixelate = stateMachine.getSharedData().post.createPass<PixelatePass>();
+	stateMachine.getSharedData().pixelate->setEnabled(isPixelate);
+	stateMachine.getSharedData().rgbShift = stateMachine.getSharedData().post.createPass<RGBShiftPass>();
+	stateMachine.getSharedData().rgbShift->setEnabled(isRGBShift);
+	stateMachine.getSharedData().zoomBlur = stateMachine.getSharedData().post.createPass<ZoomBlurPass>();
+	stateMachine.getSharedData().zoomBlur->setEnabled(isZoomBlur);
+	stateMachine.getSharedData().godray = stateMachine.getSharedData().post.createPass<GodRaysPass>();
+	stateMachine.getSharedData().godray->setEnabled(isGodray);
+	stateMachine.getSharedData().invert = stateMachine.getSharedData().post.createPass<Invert>();
+	stateMachine.getSharedData().invert->setEnabled(isInvert);
+	stateMachine.getSharedData().glitch = stateMachine.getSharedData().post.createPass<Glitch>();
+	stateMachine.getSharedData().glitch->setEnabled(isGlitch);
+	stateMachine.getSharedData().rotate = stateMachine.getSharedData().post.createPass<Rotate>();
+	stateMachine.getSharedData().rotate->setEnabled(isRotate);
 
 	stateMachine.getSharedData().fbo.allocate(ofGetWidth(), ofGetHeight());
 
@@ -109,43 +119,43 @@ void ofApp::keyPressed(int key){
 	// Post Effect enable/disable
 	case 'q': // Bloom
 		isBloom = !isBloom;
-		stateMachine.getSharedData().post[0]->setEnabled(isBloom);
+		stateMachine.getSharedData().bloom->setEnabled(isBloom);
 		break;
 	case 'w': // Edge
 		isEdge = !isEdge;
-		stateMachine.getSharedData().post[1]->setEnabled(isEdge);
+		stateMachine.getSharedData().edge->setEnabled(isEdge);
 		break;
-	case 'e': // Dof
-		isDof = !isDof;
-		stateMachine.getSharedData().post[2]->setEnabled(isDof);
+	case 'e':
+		isRotate = !isRotate;
+		stateMachine.getSharedData().rotate->setEnabled(isRotate);
 		break;
 	case 'r': // NoiseWarp
 		isNoiseWarp = !isNoiseWarp;
-		stateMachine.getSharedData().post[3]->setEnabled(isNoiseWarp);
+		stateMachine.getSharedData().noiseWarp->setEnabled(isNoiseWarp);
 		break;
 	case 't': // Pixelate
 		isPixelate = !isPixelate;
-		stateMachine.getSharedData().post[4]->setEnabled(isPixelate);
+		stateMachine.getSharedData().pixelate->setEnabled(isPixelate);
 		break;
 	case 'y': // RGBShift
 		isRGBShift = !isRGBShift;
-		stateMachine.getSharedData().post[5]->setEnabled(isRGBShift);
+		stateMachine.getSharedData().rgbShift->setEnabled(isRGBShift);
 		break;
 	case 'u': // ZoomBlur
 		isZoomBlur = !isZoomBlur;
-		stateMachine.getSharedData().post[6]->setEnabled(isZoomBlur);
+		stateMachine.getSharedData().zoomBlur->setEnabled(isZoomBlur);
 		break;
 	case 'i': // Godray
 		isGodray = !isGodray;
-		stateMachine.getSharedData().post[7]->setEnabled(isGodray);
+		stateMachine.getSharedData().godray->setEnabled(isGodray);
 		break;
 	case 'o':
 		isInvert = !isInvert;
-		stateMachine.getSharedData().post[8]->setEnabled(isInvert);
+		stateMachine.getSharedData().invert->setEnabled(isInvert);
 		break;
 	case 'p':
 		isGlitch = !isGlitch;
-		stateMachine.getSharedData().post[9]->setEnabled(isGlitch);
+		stateMachine.getSharedData().glitch->setEnabled(isGlitch);
 	}
 }
 

@@ -27,6 +27,7 @@ void SceneA::setup() {
 	planeShader.load("shader/SceneA/plane.vert", "shader/SceneA/plane.frag", "shader/SceneA/plane.geom");
 	dancerShader.load("shader/SceneA/dancer.vert", "shader/SceneA/dancer.frag", "shader/SceneA/dancer.geom");
 	pixelizeDancer.load("shader/SceneA/pixelizeDancer.vert", "shader/SceneA/pixelizeDancer.frag", "shader/SceneA/pixelizeDancer.geom");
+	wallShader.load("shader/SceneA/wallShader.vert", "shader/SceneA/wallShader.frag");// , "shader/SceneA/wallShader.geom");
 
 	// Init custom GUI
 	gui.setup();
@@ -55,6 +56,7 @@ void SceneA::setup() {
 			plane.addTexCoord(ofVec2f(x, y) / 30);
 		}
 	}
+	wall = ofBoxPrimitive(1, 10, 1).getMesh();
 
 	// Sphere man
 	sphere = ofSpherePrimitive(2, 16).getMesh();
@@ -75,11 +77,9 @@ void SceneA::update() {
 	else planeHeight -= 0.1;
 
 	if (sceneMode == 0) {
-		isColored = false;
 		scene1();
 	}
 	else if (sceneMode == 1) {
-		isColored = true;
 		scene1();
 	}
 	else if (sceneMode == 2) {
@@ -87,7 +87,7 @@ void SceneA::update() {
 	}
 	else if (sceneMode == 3) {
 		//scene4();
-		isPixeled = true;
+		scene3();
 	}
 	else if (sceneMode == 4) {
 		isColored = true;
@@ -173,6 +173,8 @@ void SceneA::scene3() {
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
+	drawWall();
+
 	ofMatrix4x4 model;
 	ofMatrix4x4 view = ofGetCurrentViewMatrix();
 	ofMatrix4x4 projection = cam.getProjectionMatrix();
@@ -186,6 +188,7 @@ void SceneA::scene3() {
 	planeShader.begin();
 	planeShader.setUniform1f("intensity", getSharedData().volume);
 	planeShader.setUniform1i("isReactive", isReactive);
+	planeShader.setUniform1i("isColored", isColored);
 	planeShader.setUniform1f("planeHeight", planeHeight);
 	planeShader.setUniform1f("time", time);
 	plane.draw(OF_MESH_FILL);
@@ -269,6 +272,27 @@ void SceneA::scene4() {
 	renderFbo.draw(0, 0);
 	getSharedData().post.end();
 }
+
+//------------------------------------------------------------------------------------------
+void SceneA::drawWall() {
+	getSharedData().leftBuffer.bind(GL_SHADER_STORAGE_BUFFER);
+	getSharedData().leftBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+
+	wallShader.begin();
+	for (int i = 0; i < getSharedData().left.size(); i++) {
+		ofPushMatrix();
+		float theta = ((float)i / getSharedData().left.size()) * TWO_PI;
+		ofTranslate(sin(theta) * 100, 0, cos(theta) * 100);
+		ofScale(1, getSharedData().left[i] * 100.0, 1);
+		wall.draw(OF_MESH_FILL);
+		ofPopMatrix();
+	}
+	wallShader.end();
+
+	getSharedData().leftBuffer.unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	getSharedData().leftBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
+}
+
 // =========================================================================================
 void SceneA::keyPressed(int key) {
 	int NUM_BRIGHT = 0;
@@ -278,15 +302,20 @@ void SceneA::keyPressed(int key) {
 	// Change child scene
 	case 'z': // simple 
 		sceneMode = 0;
+		isColored = false;
 		break;
 	case 'x': // colored start scene
 		sceneMode = 1;
+		isColored = true;
 		break;
 	case 'c': // only dance scene
 		sceneMode = 2;
+		isColored = false;
+
 		break;
 	case 'v':  // dance & plane
 		sceneMode = 3;
+		isColored = true;
 		break;
 	case 'b': // colored dance & plane
 		sceneMode = 4;

@@ -149,10 +149,28 @@ void SceneB::update() {
 	}*/
 	switch(sceneMode) {
 	case 0:
+		forceBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
+		forceBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+		dataBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
+		dataBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+
 		scene1();
+
+		dataBuffer.unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
+		dataBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
+		forceBuffer.unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
+		forceBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
 		break;
 	case 1:
+		dataBuffer.bind(GL_SHADER_STORAGE_BUFFER);
+		dataBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+		lifeBuffer.bind(GL_SHADER_STORAGE_BUFFER);
+		lifeBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 2);
 		scene2();
+		lifeBuffer.unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
+		lifeBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
+		dataBuffer.unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
+		dataBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
 		break;
 	}
 

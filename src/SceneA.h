@@ -128,9 +128,11 @@ private:
 	void scene4();
 	void sceneBurst();
 
+	void drawWall();
+
 	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo;
 	myCamera cam;
-	ofShader renderShader, volumetricShader, planeShader;
+	ofShader renderShader, volumetricShader, planeShader, wallShader;
 
 	ofxPanel gui;
 	ofParameter<float> density, weight, decay, exposure, screenY;
@@ -143,7 +145,7 @@ private:
 	float time;
 	int sceneMode;
 
-	ofVboMesh plane, audioPlane;
+	ofVboMesh plane, audioPlane, wall;
 	float planeHeight;
 
 	// Bvh

@@ -14,6 +14,7 @@ in Vertex {
 
 out vec4 vColor;
 out vec2 vTexCoord;
+out vec3 vNormal;
 
 // rule:
 // v0 -> v1 -> v2の順で結ぶ

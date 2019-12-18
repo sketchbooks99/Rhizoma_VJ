@@ -51,6 +51,7 @@ public:
 	vector<float> left;
 	vector<float> right;
 	vector<float> volHistory;
+	ofBufferObject leftBuffer, rightBuffer;
 	/*
 	float *fftSmoothed;
 	float *volume;

@@ -3,10 +3,39 @@
 #include "SceneB.h"
 #include "SceneC.h"
 #include "SceneD.h"
+#include "SceneE.h"
+#include "SceneF.h"
 #include "Debug.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+
+	// Sound setup
+	//soundStream.setup(this, 0, 2, 44100, 256);
+	decayRate = 0.05;
+	minimumThreshold = 0.1;
+	kickThreshold = minimumThreshold;
+	curVol = 0.0;
+	smoothedVol = 0.0;
+	stateMachine.getSharedData().volume = 0;
+	ofSoundStreamSettings settings;
+	auto devices = soundStream.getMatchingDevices("default");
+	if (!devices.empty()) {
+		settings.setInDevice(devices[0]);
+	}
+	settings.setInListener(this);
+	settings.sampleRate = 44100;
+	settings.numOutputChannels = 0;
+	settings.numInputChannels = 2;
+	settings.bufferSize = 256;
+	settings.setApi(ofSoundDevice::MS_DS);
+	soundStream.setup(settings);
+
+	stateMachine.getSharedData().left.assign(settings.bufferSize, 0.0);
+	cout << stateMachine.getSharedData().left.size();
+	stateMachine.getSharedData().leftBuffer.allocate(stateMachine.getSharedData().left, GL_DYNAMIC_DRAW);
+	stateMachine.getSharedData().right.assign(settings.bufferSize, 0.0);
+	stateMachine.getSharedData().rightBuffer.allocate(stateMachine.getSharedData().right, GL_DYNAMIC_DRAW);
 
 	ofSetFrameRate(30);
 	ofSetVerticalSync(true);
@@ -29,6 +58,7 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.add(fps.set("fps", 60, 0, 60));
 	stateMachine.getSharedData().gui.add(isKicked.setup("isKick", false));
 
+	// Post Effect settings
 	stateMachine.getSharedData().post.init(ofGetWidth(), ofGetHeight());
 	stateMachine.getSharedData().post.setFlip(false);
 	stateMachine.getSharedData().bloom = stateMachine.getSharedData().post.createPass<BloomPass>();
@@ -53,40 +83,18 @@ void ofApp::setup() {
 	stateMachine.getSharedData().glitch = stateMachine.getSharedData().post.createPass<Glitch>();
 	stateMachine.getSharedData().glitch->setEnabled(isGlitch);
 
+	// Allocate FBO
 	stateMachine.getSharedData().fbo.allocate(ofGetWidth(), ofGetHeight());
 
+	// Add scenes
 	stateMachine.addState<SceneA>();
 	stateMachine.addState<SceneB>();
 	stateMachine.addState<SceneC>();
 	stateMachine.addState<SceneD>();
-	stateMachine.addState<Debug>();
+	stateMachine.addState<SceneE>();
+	stateMachine.addState<SceneF>();
+	//stateMachine.addState<Debug>();
 	stateMachine.changeState("SceneA");
-
-	stateMachine.getSharedData().bloom->setEnabled(false);
-
-	// Sound setup
-	//soundStream.setup(this, 0, 2, 44100, 256);
-	decayRate = 0.05;
-	minimumThreshold = 0.1;
-	kickThreshold = minimumThreshold;
-	curVol = 0.0;
-	smoothedVol = 0.0;
-	stateMachine.getSharedData().volume = 0;
-	ofSoundStreamSettings settings;
-	auto devices = soundStream.getMatchingDevices("default");
-	if (!devices.empty()) {
-		settings.setInDevice(devices[0]);
-	}
-	settings.setInListener(this);
-	settings.sampleRate = 44100;
-	settings.numOutputChannels = 0;
-	settings.numInputChannels = 2;
-	settings.bufferSize = 256;
-	settings.setApi(ofSoundDevice::MS_DS);
-	soundStream.setup(settings);
-
-	stateMachine.getSharedData().left.assign(settings.bufferSize, 0.0);
-	stateMachine.getSharedData().right.assign(settings.bufferSize, 0.0);
 }
 
 //--------------------------------------------------------------
@@ -140,7 +148,11 @@ void ofApp::keyPressed(int key){
 		stateMachine.changeState("SceneD");
 		break;
 	case '5':
-		stateMachine.changeState("Debug");
+		stateMachine.changeState("SceneE");
+		break;
+	case '6':
+		stateMachine.changeState("SceneF");
+		stateMachine.getSharedData().bloom->setEnabled(false);
 		break;
 	// Post Effect enable/disable
 	case 'q': // Bloom
@@ -246,6 +258,8 @@ void ofApp::audioIn(ofSoundBuffer & input) {
 		curVol += stateMachine.getSharedData().right[i] * stateMachine.getSharedData().right[i];
 		numCounted += 2;
 	}
+	//stateMachine.getSharedData().leftBuffer.updateData(stateMachine.getSharedData().left);
+	//stateMachine.getSharedData().rightBuffer.updateData(stateMachine.getSharedData().right);
 	curVol /= (float)numCounted;
 	curVol = sqrt(curVol);
 

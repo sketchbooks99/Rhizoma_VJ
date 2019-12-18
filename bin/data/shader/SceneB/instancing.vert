@@ -56,5 +56,6 @@ void main() {
     vec3 pos = (obj2world * position).xyz;// + boid.pos;
 
     gl_Position = vec4(pos, 1.0);
-    geomColor = vec4(hsb2rgb(vec3(float(gl_InstanceID) / numFish, 1.0, 1.0)), 1.0);
+    // geomColor = vec4(hsb2rgb(vec3(float(gl_InstanceID) / numFish, 1.0, 1.0)), 1.0);
+    geomColor = vec4(vec3(0.2, 0.6, 0.6), 1.0);
 }

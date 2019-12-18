@@ -55,7 +55,8 @@ float computeDepth(vec4 clipPos) {
 void main() {
 	// fragment position
 	// vec2 p = (vTexCoord * 2.0 - resolution) / min(resolution.x, resolution.y);
-    vec2 p = (vTexCoord * 2.0 - 1.0) / (resolution.y / resolution.x);
+    vec2 p = (vTexCoord * 2.0 - 1.0);
+	p.x *= (resolution.x / resolution.y);
 	p.y *= -1.0;
 
 	// camera
@@ -84,7 +85,8 @@ void main() {
 		gPosition = vec4(world.xyz, 1.0);
 		vec3 normal = mat3(modelViewMatrix) * getNormal(rPos);
 		gNormal = vec4(normal, 1.0);
-		gColor = vec4(0.3, 0.6, 0.5, 1.0);
+		// gColor = vec4(0.3, 0.6, 0.5, 1.0);
+		gColor = vec4(vec3(sin(rPos.y * 30.0 + time * 2.0)), 1.0);
 
 		float d = computeDepth(modelViewProjectionMatrix * vec4(rPos, 1.0));
 

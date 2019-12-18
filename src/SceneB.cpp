@@ -132,7 +132,7 @@ void SceneB::setup() {
 	gui.add(fps.set("fps", 60, 0, 200));
 
 	// Bloom Enable
-	getSharedData().post[0]->setEnabled(true);
+	getSharedData().bloom->setEnabled(true);
 }
 
 // =========================================================================================
@@ -258,7 +258,7 @@ void SceneB::scene1() {
 
 	instancingShader.begin();
 	instancingShader.setUniformTexture("posTex", posTex, 0);
-	instancingShader.setUniform1i("isInvert", getSharedData().post[8]->getEnabled());
+	instancingShader.setUniform1i("isInvert", getSharedData().invert->getEnabled());
 	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.7, getSharedData().volume * 10.0));
 	instancingShader.setUniform1i("numFish", numFish);
 	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
@@ -320,7 +320,7 @@ void SceneB::scene2() {
 
 	instancingShader.begin();
 	instancingShader.setUniformTexture("posTex", posTex, 0);
-	instancingShader.setUniform1i("isInvert", getSharedData().post[8]->getEnabled());
+	instancingShader.setUniform1i("isInvert", getSharedData().invert->getEnabled());
 	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(1.0, getSharedData().volume * 10.0));
 	instancingShader.setUniform1i("numFish", numFish);
 	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);

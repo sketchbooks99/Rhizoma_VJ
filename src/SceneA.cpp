@@ -2,8 +2,6 @@
 
 // =========================================================================================
 void SceneA::setup() {
-
-	ofEnableAntiAliasing();
 	planeHeight = 0.0;
 
 	// Render settings
@@ -25,9 +23,10 @@ void SceneA::setup() {
 	renderShader.load("shader/SceneA/render.vert", "shader/SceneA/render.frag");
 	volumetricShader.load("shader/SceneA/volumetric.vert", "shader/SceneA/volumetric.frag");
 	planeShader.load("shader/SceneA/plane.vert", "shader/SceneA/plane.frag", "shader/SceneA/plane.geom");
-	dancerShader.load("shader/SceneA/dancer.vert", "shader/SceneA/dancer.frag", "shader/SceneA/dancer.geom");
+	sphereShader.load("shader/SceneA/sphere.vert", "shader/SceneA/sphere.frag", "shader/SceneA/sphere.geom");
 	pixelizeDancer.load("shader/SceneA/pixelizeDancer.vert", "shader/SceneA/pixelizeDancer.frag", "shader/SceneA/pixelizeDancer.geom");
 	wallShader.load("shader/SceneA/wallShader.vert", "shader/SceneA/wallShader.frag");// , "shader/SceneA/wallShader.geom");
+	boxShader.load("shader/SceneA/box.vert", "shader/SceneA/box.frag", "shader/SceneA/box.geom");
 
 	// Init custom GUI
 	gui.setup();
@@ -49,48 +48,50 @@ void SceneA::setup() {
 	cam.setDistance(150);
 
 	// Geometry settings
-	int xRes = 20, yRes = 20;
+	int xRes = 15, yRes = 15;
 	plane = ofPlanePrimitive(150, 150, xRes, yRes).getMesh();
 	for (int x = 0; x < xRes; x++) {
 		for (int y = 0; y < yRes; y++) {
-			plane.addTexCoord(ofVec2f(x, y) / 30);
+			plane.addTexCoord(ofVec2f(x, y) / 15);
 		}
 	}
 	wall = ofBoxPrimitive(1, 10, 1).getMesh();
+	box = ofBoxPrimitive(20, 20, 20, 3, 3, 3).getMesh();
 
 	// Sphere man
-	sphere = ofSpherePrimitive(2, 16).getMesh();
-	//filename = "bvh102-111/111/111_05.bvh";
-	filename = "bvh/MMD_Lamb.bvh";
-	bvh = ofxBvh(filename);
-	bvh.setLoop(true);
-	bvh.play();
+	sphere = ofIcoSpherePrimitive(16, 2).getMesh();
 }
 
 // =========================================================================================
 void SceneA::update() {
 	// Scene update
-	bvh.update();
 	time = getSharedData().time;
 
 	if (getSharedData().isKicked) planeHeight = 10.0;
 	else planeHeight -= 0.1;
 
 	if (sceneMode == 0) {
+		if (getSharedData().isKicked) {
+			getSharedData().zoomBlur->setEnabled(true);
+			getSharedData().zoomBlur->setWeight(0.5);
+		}
+		else {
+			if (getSharedData().zoomBlur->getWeight() > 0.0) getSharedData().zoomBlur->setWeight(getSharedData().zoomBlur->getWeight() - 0.01);
+		}
 		scene1();
 	}
 	else if (sceneMode == 1) {
-		scene1();
+		scene2();
 	}
 	else if (sceneMode == 2) {
-		scene3();
-	}
-	else if (sceneMode == 3) {
 		//scene4();
 		scene3();
 	}
-	else if (sceneMode == 4) {
+	else if (sceneMode == 3) {
 		isColored = true;
+	}
+	else if (sceneMode == 4) {
+		scene5();
 	}
 
 	getSharedData().fbo.begin();
@@ -159,11 +160,6 @@ void SceneA::scene1() {
 
 // =========================================================================================
 void SceneA::scene2() {
-
-}
-
-// =========================================================================================
-void SceneA::scene3() {
 	float radius = 50;
 	cam.setPosition(sin(time * 0.3) * radius, -10, cos(time * 0.3) * radius);
 	cam.lookAt(ofVec3f(0, 0, 0));
@@ -195,17 +191,31 @@ void SceneA::scene3() {
 	planeShader.end();
 	ofPopMatrix();
 
-	dancerShader.begin();
-	for (int i = 0; i < bvh.getJoints().size(); i++) {
-		model = ofMatrix4x4();
-		model.translate(bvh.getJoints()[i]->getPosition() * 0.1);
-		ofMatrix4x4 mvpMatrix = model * view * projection;
-		ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+	glDisable(GL_DEPTH_TEST);
+	cam.end();
+	renderFbo.end();
 
-		dancerShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
-		sphere.draw(OF_MESH_FILL);
-	}
-	dancerShader.end();
+	getSharedData().post.begin();
+	renderFbo.draw(0, 0);
+	getSharedData().post.end();
+}
+
+// =========================================================================================
+void SceneA::scene3() {
+	float radius = 40;
+	cam.setPosition(sin(time * 0.3) * radius, -10, cos(time * 0.3) * radius);
+	cam.lookAt(ofVec3f(0, 0, 0));
+
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	cam.begin();
+	glEnable(GL_DEPTH_TEST);
+
+	// render scene
+	sphereShader.begin();
+	sphereShader.setUniform1f("time", time);
+	sphere.draw(OF_MESH_FILL);
+	sphereShader.end();
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
@@ -215,54 +225,21 @@ void SceneA::scene3() {
 	renderFbo.draw(0, 0);
 	getSharedData().post.end();
 }
-// =========================================================================================
+//------------------------------------------------------------------------------------------
 void SceneA::scene4() {
-	float radius = 100;
-	cam.setPosition(sin(time * 0.1) * radius, -10, cos(time * 0.2) * radius);
-	cam.lookAt(ofVec3f(0, 0, 0));
-
 	renderFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
-
-	// Draw Floor
-	ofMatrix4x4 model;
-	ofMatrix4x4 view = ofGetCurrentViewMatrix();
-	ofMatrix4x4 projection = cam.getProjectionMatrix();
-	ofMatrix4x4 mvpMatrix = model * view * projection;
-	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
-
+	
+	// render scene
+	boxShader.begin();
 	ofPushMatrix();
-
-	ofRotateXDeg(90);
-
-	plane.draw(OF_MESH_WIREFRAME);
-
-	planeShader.begin();
-	planeShader.setUniform1f("intensity", getSharedData().volume);
-	planeShader.setUniform1i("isReactive", isReactive);
-	planeShader.setUniform1f("planeHeight", planeHeight);
-	planeShader.setUniformMatrix4f("invMatrix", invMatrix);
-	planeShader.setUniform1f("time", time);
-	plane.draw(OF_MESH_FILL);
-	planeShader.end();
-
+	ofRotate(time * 30.0, 0.4, 0.7, 1.0);
+	boxShader.setUniform1f("time", time);
+	box.draw(OF_MESH_FILL);
 	ofPopMatrix();
-
-	dancerShader.begin();
-	for (int i = 0; i < bvh.getJoints().size(); i++) {
-
-		model = ofMatrix4x4();
-		model.translate(bvh.getJoints()[i]->getPosition() * 0.1);
-		mvpMatrix = model * view * projection;
-		invMatrix = mvpMatrix.getInverse();
-
-		dancerShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
-		dancerShader.setUniformMatrix4f("invMatrix", invMatrix);
-		sphere.draw(OF_MESH_FILL);
-	}
-	dancerShader.end();
+	boxShader.end();
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
@@ -275,31 +252,36 @@ void SceneA::scene4() {
 
 //------------------------------------------------------------------------------------------
 void SceneA::drawWall() {
-	getSharedData().leftBuffer.bind(GL_SHADER_STORAGE_BUFFER);
-	getSharedData().leftBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-
-	wallShader.begin();
+	if (getSharedData().isKicked) wallOffset = 5.0;
+	else {
+		if (wallOffset > 1.0) wallOffset -= 0.1;
+		else if (wallOffset < 1.0) wallOffset = 1.0;
+	}
 	for (int i = 0; i < getSharedData().left.size(); i++) {
 		ofPushMatrix();
+		wallShader.setUniform1i("index", i);
+		float wallHeight = ofNoise(time * 0.2 + i * 0.1) * 5.0;
+		ofScale(1, wallHeight * wallOffset, 1);
 		float theta = ((float)i / getSharedData().left.size()) * TWO_PI;
 		ofTranslate(sin(theta) * 100, 0, cos(theta) * 100);
-		ofScale(1, getSharedData().left[i] * 100.0, 1);
 		wall.draw(OF_MESH_FILL);
 		ofPopMatrix();
 	}
-	wallShader.end();
-
-	getSharedData().leftBuffer.unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
-	getSharedData().leftBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
 }
 
 // =========================================================================================
 void SceneA::keyPressed(int key) {
 	int NUM_BRIGHT = 0;
 	switch (key) {
-	case 'a':
+	case 'a': // camera change
+		break;
+	case 's':
+		isColored = !isColored;
 		break;
 	// Change child scene
+	case 'd':
+		isReactive = !isReactive;
+		break;
 	case 'z': // simple 
 		sceneMode = 0;
 		isColored = false;
@@ -308,19 +290,18 @@ void SceneA::keyPressed(int key) {
 		sceneMode = 1;
 		isColored = true;
 		break;
-	case 'c': // only dance scene
+	case 'c': // only sphere scene
 		sceneMode = 2;
 		isColored = false;
-
 		break;
-	case 'v':  // dance & plane
+	case 'v':  // pop up cube
 		sceneMode = 3;
-		isColored = true;
+		isColored = false;
 		break;
-	case 'b': // colored dance & plane
+	case 'b':  // room
 		sceneMode = 4;
 		break;
-	case 'n': // dance & plane reactive(noise, audio, line)
+	case 'n': // geometry in cube
 		sceneMode = 5;
 		break;
 	case 'm': 

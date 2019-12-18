@@ -14,18 +14,24 @@ public:
 		c.setCircleResolution(_res);
 		c.setColor(ofColor(255, 255, 255, 255));
 		c.arc(ofVec3f(0, 0, 0), size, size, 0, 360);
-		c.arc(ofVec3f(0, 0, 0), size - 20, size - 20, 0, 360);
+		c.arc(ofVec3f(0, 0, 0), size - 50, size - 50, 0, 360);
+
+		nowRotate = 0;
 	}
 
 	void update() {
 		pos += dir * speed;
+		if (rotateTime > 0.0) rotateTime -= ofGetLastFrameTime();
+		else rotateTime = 0.0;
 	}
 
 	void draw(float time) {
 		ofPushMatrix();
 		ofTranslate(pos);
 		// ofRotateXDeg(90);
-		ofRotateZDeg(time);
+		if (rotateTime > 0.0)
+			nowRotate += time * rotSpeed;
+		ofRotateZRad(nowRotate);
 		c.draw();
 		ofPopMatrix();
 	}
@@ -39,8 +45,10 @@ public:
 	void setDir(ofVec3f _dir) { dir = _dir;} 
 	ofVec3f getDir() { return dir;}
 
+	void setRotate(float _rotSpeed) { rotSpeed = _rotSpeed; rotateTime = 0.2f; }
+
 	unsigned int size, res;
-	float speed;
+	float speed, rotateTime, rotSpeed, nowRotate;
 	ofVec3f pos, vel, dir;
 	ofPath c;
 };

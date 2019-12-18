@@ -13,7 +13,7 @@ void ofApp::setup() {
 	// Sound setup
 	//soundStream.setup(this, 0, 2, 44100, 256);
 	decayRate = 0.05;
-	minimumThreshold = 0.1;
+	minimumThreshold = 0.05;
 	kickThreshold = minimumThreshold;
 	curVol = 0.0;
 	smoothedVol = 0.0;
@@ -32,10 +32,7 @@ void ofApp::setup() {
 	soundStream.setup(settings);
 
 	stateMachine.getSharedData().left.assign(settings.bufferSize, 0.0);
-	cout << stateMachine.getSharedData().left.size();
-	stateMachine.getSharedData().leftBuffer.allocate(stateMachine.getSharedData().left, GL_DYNAMIC_DRAW);
 	stateMachine.getSharedData().right.assign(settings.bufferSize, 0.0);
-	stateMachine.getSharedData().rightBuffer.allocate(stateMachine.getSharedData().right, GL_DYNAMIC_DRAW);
 
 	ofSetFrameRate(30);
 	ofSetVerticalSync(true);
@@ -46,17 +43,19 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.setPosition(10, 10);
 	stateMachine.getSharedData().gui.add(isBloom.setup("Bloom", false));
 	stateMachine.getSharedData().gui.add(isEdge.setup("Edge", false));
-	stateMachine.getSharedData().gui.add(isRotate.setup("Rotate", false));
 	stateMachine.getSharedData().gui.add(isNoiseWarp.setup("NoiseWarp", false));
-	stateMachine.getSharedData().gui.add(isPixelate.setup("Pixelate", false));
 	stateMachine.getSharedData().gui.add(isRGBShift.setup("RGBShift", false));
 	stateMachine.getSharedData().gui.add(isZoomBlur.setup("ZoomBlur", false));
-	stateMachine.getSharedData().gui.add(isGodray.setup("Godray", false));
 	stateMachine.getSharedData().gui.add(isInvert.setup("Invert", false));
 	stateMachine.getSharedData().gui.add(isGlitch.setup("Glitch", false));
+	stateMachine.getSharedData().gui.add(isBeyoon.setup("Beyoon", false));
+	stateMachine.getSharedData().gui.add(isReflectX.setup("ReflectX", false));
+	stateMachine.getSharedData().gui.add(isReflectY.setup("ReflectY", false));
+	stateMachine.getSharedData().gui.add(isSplit.setup("Split", false));
 	stateMachine.getSharedData().gui.add(sound.set("Sound", 0, 0, 1));
 	stateMachine.getSharedData().gui.add(fps.set("fps", 60, 0, 60));
 	stateMachine.getSharedData().gui.add(isKicked.setup("isKick", false));
+	stateMachine.getSharedData().gui.add(bloomStrength.set("bloom", 0.0, 0.0, 5.0));
 
 	// Post Effect settings
 	stateMachine.getSharedData().post.init(ofGetWidth(), ofGetHeight());
@@ -66,22 +65,24 @@ void ofApp::setup() {
 	stateMachine.getSharedData().bloom->setStrength(1.0f);
 	stateMachine.getSharedData().edge = stateMachine.getSharedData().post.createPass<EdgePass>();
 	stateMachine.getSharedData().edge->setEnabled(isEdge);
-	stateMachine.getSharedData().rotate = stateMachine.getSharedData().post.createPass<Rotate>();
-	stateMachine.getSharedData().rotate->setEnabled(isRotate);
 	stateMachine.getSharedData().noiseWarp = stateMachine.getSharedData().post.createPass<NoiseWarpPass>();
 	stateMachine.getSharedData().noiseWarp->setEnabled(isNoiseWarp);
-	stateMachine.getSharedData().pixelate = stateMachine.getSharedData().post.createPass<PixelatePass>();
-	stateMachine.getSharedData().pixelate->setEnabled(isPixelate);
 	stateMachine.getSharedData().rgbShift = stateMachine.getSharedData().post.createPass<RGBShiftPass>();
 	stateMachine.getSharedData().rgbShift->setEnabled(isRGBShift);
 	stateMachine.getSharedData().zoomBlur = stateMachine.getSharedData().post.createPass<ZoomBlurPass>();
 	stateMachine.getSharedData().zoomBlur->setEnabled(isZoomBlur);
-	stateMachine.getSharedData().godray = stateMachine.getSharedData().post.createPass<GodRaysPass>();
-	stateMachine.getSharedData().godray->setEnabled(isGodray);
 	stateMachine.getSharedData().invert = stateMachine.getSharedData().post.createPass<Invert>();
 	stateMachine.getSharedData().invert->setEnabled(isInvert);
 	stateMachine.getSharedData().glitch = stateMachine.getSharedData().post.createPass<Glitch>();
 	stateMachine.getSharedData().glitch->setEnabled(isGlitch);
+	stateMachine.getSharedData().beyoon = stateMachine.getSharedData().post.createPass<Beyoon>();
+	stateMachine.getSharedData().beyoon->setEnabled(isBeyoon);
+	stateMachine.getSharedData().reflectX = stateMachine.getSharedData().post.createPass<ReflectX>();
+	stateMachine.getSharedData().reflectX->setEnabled(isReflectX);
+	stateMachine.getSharedData().reflectY = stateMachine.getSharedData().post.createPass<ReflectY>();
+	stateMachine.getSharedData().reflectY->setEnabled(isReflectY);
+	stateMachine.getSharedData().split = stateMachine.getSharedData().post.createPass<Split>();
+	stateMachine.getSharedData().split->setEnabled(isSplit);
 
 	// Allocate FBO
 	stateMachine.getSharedData().fbo.allocate(ofGetWidth(), ofGetHeight());
@@ -94,18 +95,24 @@ void ofApp::setup() {
 	stateMachine.addState<SceneE>();
 	stateMachine.addState<SceneF>();
 	//stateMachine.addState<Debug>();
-	stateMachine.changeState("SceneA");
+	// stateMachine.changeState("SceneA");
+	// stateMachine.changeState("SceneB");
+	stateMachine.changeState("SceneC");
+	// stateMachine.changeState("SceneD");
+	// stateMachine.changeState("SceneE");
+	// stateMachine.changeState("SceneF");
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 	stateMachine.getSharedData().time = ofGetElapsedTimef();
+	bloomStrength = stateMachine.getSharedData().bloom->getStrength();
 
 	sub->fbo = stateMachine.getSharedData().fbo;
 
 	sound = stateMachine.getSharedData().volume;
 
-	stateMachine.getSharedData().rgbShift->setAmount(stateMachine.getSharedData().volume);
+	stateMachine.getSharedData().rgbShift->setAmount(std::min(stateMachine.getSharedData().volume * 0.1f, 0.01f));
 	if (isZoomBlurReactive) {
 		stateMachine.getSharedData().zoomBlur->setEnabled(stateMachine.getSharedData().isKicked);
 	}
@@ -113,14 +120,15 @@ void ofApp::update(){
 
 	isBloom = stateMachine.getSharedData().bloom->getEnabled();
 	isEdge = stateMachine.getSharedData().edge->getEnabled();
-	isRotate = stateMachine.getSharedData().rotate->getEnabled();
 	isNoiseWarp = stateMachine.getSharedData().noiseWarp->getEnabled();
-	isPixelate = stateMachine.getSharedData().pixelate->getEnabled();
 	isRGBShift = stateMachine.getSharedData().rgbShift->getEnabled();
 	isZoomBlur = stateMachine.getSharedData().zoomBlur->getEnabled();
-	isGodray = stateMachine.getSharedData().godray->getEnabled();
 	isInvert = stateMachine.getSharedData().invert->getEnabled();
 	isGlitch = stateMachine.getSharedData().glitch->getEnabled();
+	isBeyoon = stateMachine.getSharedData().beyoon->getEnabled();
+	isReflectX = stateMachine.getSharedData().reflectX->getEnabled();
+	isReflectY = stateMachine.getSharedData().reflectY->getEnabled();
+	isSplit = stateMachine.getSharedData().split->getEnabled();
 }
 
 //--------------------------------------------------------------
@@ -134,25 +142,32 @@ void ofApp::keyPressed(int key){
 		// Scene changing
 	case '1':
 		stateMachine.changeState("SceneA");
-		stateMachine.getSharedData().bloom->setStrength(1.5);
+		stateMachine.getSharedData().bloom->setStrength(1.0);
 		break;
 	case '2':
 		stateMachine.changeState("SceneB");
 		stateMachine.getSharedData().bloom->setEnabled(true);
 		stateMachine.getSharedData().bloom->setStrength(3.5);
 		break;
-	case '3':
+	case '3': // ray marching
 		stateMachine.changeState("SceneC");
+		stateMachine.getSharedData().bloom->setEnabled(false);
+		stateMachine.getSharedData().bloom->setStrength(1.0);
 		break;
 	case '4':
 		stateMachine.changeState("SceneD");
+		stateMachine.getSharedData().bloom->setEnabled(true);
+		stateMachine.getSharedData().bloom->setStrength(1.0);
 		break;
 	case '5':
 		stateMachine.changeState("SceneE");
+		stateMachine.getSharedData().bloom->setEnabled(true);
+		stateMachine.getSharedData().bloom->setStrength(1.0);
 		break;
 	case '6':
 		stateMachine.changeState("SceneF");
 		stateMachine.getSharedData().bloom->setEnabled(false);
+		stateMachine.getSharedData().bloom->setStrength(0.5);
 		break;
 	// Post Effect enable/disable
 	case 'q': // Bloom
@@ -163,37 +178,41 @@ void ofApp::keyPressed(int key){
 		isEdge = !isEdge;
 		stateMachine.getSharedData().edge->setEnabled(isEdge);
 		break;
-	case 'e':
-		isRotate = !isRotate;
-		stateMachine.getSharedData().rotate->setEnabled(isRotate);
-		break;
-	case 'r': // NoiseWarp
+	case 'e': // NoiseWarp
 		isNoiseWarp = !isNoiseWarp;
 		stateMachine.getSharedData().noiseWarp->setEnabled(isNoiseWarp);
 		break;
-	case 't': // Pixelate
-		isPixelate = !isPixelate;
-		stateMachine.getSharedData().pixelate->setEnabled(isPixelate);
-		break;
-	case 'y': // RGBShift
+	case 'r': // RGBShift
 		isRGBShift = !isRGBShift;
 		stateMachine.getSharedData().rgbShift->setEnabled(isRGBShift);
 		break;
-	case 'u': // ZoomBlur
+	case 't': // ZoomBlur
 		isZoomBlur = !isZoomBlur;
 		stateMachine.getSharedData().zoomBlur->setEnabled(isZoomBlur);
 		break;
-	case 'i': // Godray
-		isGodray = !isGodray;
-		stateMachine.getSharedData().godray->setEnabled(isGodray);
-		break;
-	case 'o':
+	case 'y':
 		isInvert = !isInvert;
 		stateMachine.getSharedData().invert->setEnabled(isInvert);
 		break;
-	case 'p':
+	case 'u':
 		isGlitch = !isGlitch;
 		stateMachine.getSharedData().glitch->setEnabled(isGlitch);
+		break;
+	case 'i':
+		isBeyoon = !isBeyoon;
+		stateMachine.getSharedData().beyoon->setEnabled(isBeyoon);
+		break;
+	case 'o':
+		isReflectX = !isReflectX;
+		stateMachine.getSharedData().reflectX->setEnabled(isReflectX);
+		break;
+	case 'p':
+		isReflectY = !isReflectY;
+		stateMachine.getSharedData().reflectY->setEnabled(isReflectY);
+		break;
+	case '@':
+		isSplit = !isSplit;
+		stateMachine.getSharedData().split->setEnabled(isSplit);
 	}
 }
 
@@ -258,8 +277,6 @@ void ofApp::audioIn(ofSoundBuffer & input) {
 		curVol += stateMachine.getSharedData().right[i] * stateMachine.getSharedData().right[i];
 		numCounted += 2;
 	}
-	//stateMachine.getSharedData().leftBuffer.updateData(stateMachine.getSharedData().left);
-	//stateMachine.getSharedData().rightBuffer.updateData(stateMachine.getSharedData().right);
 	curVol /= (float)numCounted;
 	curVol = sqrt(curVol);
 

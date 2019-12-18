@@ -1,6 +1,8 @@
 #version 440
 precision mediump float;
 
+// #pragma include "../util/util.frag"
+
 uniform float time;
 uniform vec2 resolution;
 uniform mat4 view;
@@ -12,6 +14,8 @@ uniform vec3 camUp;
 uniform float fov;
 uniform float farClip;
 uniform float nearClip;
+uniform bool isColored;
+uniform vec3 edgeColor;
 
 in vec2 vTexCoord;
 
@@ -31,6 +35,15 @@ struct Object {
     vec3 color;
     vec3 edge;
 };
+
+vec3 hsb2rgb( vec3 c ){
+    vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),
+                    6.0)-3.0)-1.0,
+                    0.0,
+                    1.0 );
+    rgb = rgb*rgb*(3.0-2.0*rgb);
+    return c.z * mix(vec3(1.0), rgb, c.y);
+}
 
 vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
 
@@ -205,8 +218,9 @@ Object distanceFunc(vec3 p) {
     vec3 bx_col = vec3(1., 0., 0.);
     Object obj;
     obj.dist = dist;
-    vec3 col = vec3(.05) + mod(q.z * 0.2 + time * 1.5, 2.0) * 0.6;
+    vec3 col = vec3(.05) + mod(q.z * 0.2 + time * 0.3, 0.5) * 2.0;
     obj.color = col;
+    obj.edge = vec3(hsb2rgb(vec3(mod(time, 1.0), 1.0, 1.0)));
     return obj;
 }
 
@@ -251,19 +265,18 @@ void main() {
     
     if(obj.dist < 0.0001) {
 		vec3 normal = getNormal(rPos);
-//        float eps = 0.001;
-//        // float eps = 0.001;
-//        vec3 dif_x = getNormal(rPos+ vec3(eps, 0.0, 0.0));
-//        vec3 dif_y = getNormal(rPos + vec3(0.0, eps, 0.0));
-//        vec3 dif_z = getNormal(rPos + vec3(0.0, 0.0, eps));
-//
-//        float max_dif = .99;
-//        if(abs(dot(normal, dif_x)) < max_dif ||
-//            abs(dot(normal, dif_y)) < max_dif || 
-//            abs(dot(normal, dif_z)) < max_dif) {
-//            // obj.color = vec3(abs(dot(normal, dif_x)), abs(dot(normal, dif_y)), abs(dot(normal, dif_z)));
-//            obj.color = obj.edge;
-//        }
+       float eps = 0.001;
+       vec3 dif_x = getNormal(rPos+ vec3(eps, 0.0, 0.0));
+       vec3 dif_y = getNormal(rPos + vec3(0.0, eps, 0.0));
+       vec3 dif_z = getNormal(rPos + vec3(0.0, 0.0, eps));
+
+       float max_dif = .99;
+       if(abs(dot(normal, dif_x)) < max_dif ||
+           abs(dot(normal, dif_y)) < max_dif || 
+           abs(dot(normal, dif_z)) < max_dif) {
+           // obj.color = vec3(abs(dot(normal, dif_x)), abs(dot(normal, dif_y)), abs(dot(normal, dif_z)));
+           obj.color = obj.edge;
+       }
 		vec4 world = modelViewMatrix * vec4(rPos, 1.0);
 		gPosition = vec4(world.xyz, 1.0);
 		gNormal = vec4(mat3(modelViewMatrix) * normal, 1.0);

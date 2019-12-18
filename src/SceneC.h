@@ -10,6 +10,11 @@ class SceneC : public itg::ofxState<SharedData> {
 	void keyPressed(int key);
 	string getName();
 
+	void scene1();
+	void scene2();
+	void scene3();
+	void scene4();
+
 	// Custom Functions
 	void createGBuffer();
 	void createRenderBuffer();
@@ -21,8 +26,9 @@ class SceneC : public itg::ofxState<SharedData> {
 
 	// Shaders & fbo
 	ofShader rayShader, postShader, lightingShader, gBufferShader, gRenderShader;
-	ofFbo renderFbo, gFbo;
+	ofFbo renderFbo, gFbo, lightingFbo;
 	ofVboMesh quad;
+	ofVec3f lightPos;
 
 	ofxPanel gui;
 	ofxToggle isNormal, isDepth, isPosition, isRender;

@@ -19,6 +19,7 @@ void main() {
 
     vec3 newVertex = position.xyz + normal * n * 150.0;
     gl_Position = vec4(newVertex, 1.0);
-    vertex.color = vec4(0.6, 0.6, 0.2, 1.0);
+    // vertex.color = vec4(0.6, 0.6, 0.2, 1.0);
+    vertex.color = vec4(vec3(0.5), 1.0);
     vertex.texcoord = texcoord;
 }

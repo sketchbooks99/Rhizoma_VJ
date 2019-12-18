@@ -3,7 +3,6 @@
 #include "ofxState.h"
 #include "SharedData.h"
 #include "ofxGui.h"
-#include "ofxFBX.h"
 //class myCamera : public ofEasyCam{
 //private:
 //	float shakeTime;
@@ -126,13 +125,14 @@ private:
 	void scene2();
 	void scene3();
 	void scene4();
+	void scene5();
 	void sceneBurst();
 
 	void drawWall();
 
 	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo;
 	myCamera cam;
-	ofShader renderShader, volumetricShader, planeShader, wallShader;
+	ofShader renderShader, volumetricShader, planeShader, wallShader, sphereShader, boxShader;
 
 	ofxPanel gui;
 	ofParameter<float> density, weight, decay, exposure, screenY;
@@ -145,9 +145,11 @@ private:
 	float time;
 	int sceneMode;
 
-	ofVboMesh plane, audioPlane, wall;
+	ofVboMesh plane, audioPlane, wall, box;
 	float planeHeight;
+	float wallOffset = 1.0f;
 
+	//------------------------------- Don't use -------------------------------
 	// Bvh
 	ofxBvh bvh; 
 	ofVboMesh sphere;

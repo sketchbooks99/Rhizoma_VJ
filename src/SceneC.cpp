@@ -4,8 +4,8 @@
 void SceneC::setup() {
 	gBufferShader.load("shader/SceneC/gBuffer.vert", "shader/SceneC/gBuffer.frag");
 	//gRenderShader.load("shader/SceneC/gRender.vert", "shader/SceneC/gRender.frag");
-	rayShader.load("shader/SceneC/ray.vert", "shader/SceneC/ray.frag");
-	//lightingShader.load("shader/SceneC/lighting.vert", "shader/SceneC/lighting.frag");
+	rayShader.load("shader/SceneC/ray.vert", "shader/SceneC/ray2.frag");
+	lightingShader.load("shader/SceneC/lighting.vert", "shader/SceneC/lighting.frag");
 
 	createGBuffer();
 	createRenderBuffer();
@@ -37,16 +37,104 @@ void SceneC::setup() {
 	gui.setup();
 	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
 	gui.add(showTex.setup("showTex", false));
+
+	sceneMode = 0;
+
+	// lighting Fbo allocate
+	ofFbo::Settings s;
+	s.width = ofGetWidth();
+	s.height = ofGetHeight();
+	s.useDepth = true;
+	s.useStencil = true;
+	s.depthStencilAsTexture = true;
+	s.textureTarget = GL_TEXTURE_2D;
+	lightingFbo.allocate(s);
 }
 
 // =============================================================
 void SceneC::update() {
 	time = getSharedData().time;
+	switch (sceneMode) {
+	case 0:
+		scene1();
+		break;
+	case 1:
+		scene2();
+		break;
+	}
+}
 
+// =============================================================
+void SceneC::draw() {
+	getSharedData().fbo.draw(0, 0);
+	getSharedData().gui.draw();
+	gui.draw();
+	if (showTex) {
+		gFbo.getTexture(0).draw(10, getSharedData().gui.getHeight() + 10, 100, 100);
+		gFbo.getTexture(1).draw(110, getSharedData().gui.getHeight() + 10, 100, 100);
+		gFbo.getTexture(2).draw(210, getSharedData().gui.getHeight() + 10, 100, 100);
+	}
+}
+
+//--------------------------------------------------------------
+void SceneC::scene1() {
+	lightPos = ofVec3f(10, 10, 10);
 	glEnable(GL_DEPTH_TEST);
 
-	// Render Geometry to G-Buffer
+	// Render ray marching
 	gFbo.begin();
+	gFbo.activateAllDrawBuffers();
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	cam.begin();
+
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+
+	rayShader.begin();
+	rayShader.setUniform1f("time", time);
+	rayShader.setUniformMatrix4f("view", view);
+	rayShader.setUniform2f("resolution", gFbo.getWidth(), gFbo.getHeight());
+	rayShader.setUniformMatrix4f("projection", projection);
+	rayShader.setUniform3f("camPos", cam.getGlobalPosition());
+	rayShader.setUniform3f("camUp", cam.getUpDir());
+	rayShader.setUniform1f("fov", cam.getFov());
+	rayShader.setUniform1f("farClip", cam.getFarClip());
+	rayShader.setUniform1f("nearClip", cam.getNearClip());
+
+	quad.draw(OF_MESH_FILL);
+
+	rayShader.end();
+	cam.end();
+	gFbo.end();
+
+	glDisable(GL_DEPTH_TEST);
+
+	lightingFbo.begin();
+	lightingShader.begin();
+	lightingShader.setUniformTexture("gPosition", gFbo.getTexture(0), 0);
+	lightingShader.setUniformTexture("gNormal", gFbo.getTexture(1), 1);
+	lightingShader.setUniformTexture("gColor", gFbo.getTexture(2), 2);
+	lightingShader.setUniform3f("camPos", cam.getPosition());
+	lightingShader.setUniform3f("lightPos", lightPos);
+	quad.draw(OF_MESH_FILL);
+	lightingShader.end();
+	lightingFbo.end();
+
+	getSharedData().post.begin();
+	//gFbo.getTexture(2).draw(0, 0);
+	lightingFbo.draw(0, 0);
+	getSharedData().post.end();
+
+	getSharedData().fbo.begin();
+	getSharedData().post.draw();
+	getSharedData().fbo.end();
+}
+
+//--------------------------------------------------------------
+void SceneC::scene2() {
+	// Render Geometry to G-Buffer
+	/*gFbo.begin();
 	gFbo.activateAllDrawBuffers();
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -68,51 +156,11 @@ void SceneC::update() {
 	gBufferShader.end();
 
 	cam.end();
-	gFbo.end();
-
-	// Render ray marching
-	gFbo.begin();
-	gFbo.activateAllDrawBuffers();
-	cam.begin();
-
-	rayShader.begin();
-	rayShader.setUniform1f("time", time);
-	rayShader.setUniformMatrix4f("view", view);
-	rayShader.setUniform2f("resolution", gFbo.getWidth(), gFbo.getHeight());
-	rayShader.setUniformMatrix4f("projection", projection);
-	rayShader.setUniform3f("camPos", cam.getGlobalPosition());
-	rayShader.setUniform3f("camUp", cam.getUpDir());
-	rayShader.setUniform1f("fov", cam.getFov());
-	rayShader.setUniform1f("farClip", cam.getFarClip());
-	rayShader.setUniform1f("nearClip", cam.getNearClip());
-
-	quad.draw(OF_MESH_FILL);
-
-	rayShader.end();
-	cam.end();
-	gFbo.end();
-
-	glDisable(GL_DEPTH_TEST);
-
-	getSharedData().post.begin();
-	gFbo.getTexture(2).draw(0, 0);
-	getSharedData().post.end();
-
-	getSharedData().fbo.begin();
-	getSharedData().post.draw();
-	getSharedData().fbo.end();
+	gFbo.end();*/
 }
 
-// =============================================================
-void SceneC::draw() {
-	getSharedData().fbo.draw(0, 0);
-	getSharedData().gui.draw();
-	gui.draw();
-	if (showTex) {
-		gFbo.getTexture(0).draw(10, getSharedData().gui.getHeight() + 10, 100, 100);
-		gFbo.getTexture(1).draw(110, getSharedData().gui.getHeight() + 10, 100, 100);
-		gFbo.getTexture(2).draw(210, getSharedData().gui.getHeight() + 10, 100, 100);
-	}
+//--------------------------------------------------------------
+void SceneC::scene3() {
 }
 
 // =============================================================

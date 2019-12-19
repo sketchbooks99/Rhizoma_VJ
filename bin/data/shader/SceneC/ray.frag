@@ -6,6 +6,7 @@ precision mediump float;
 uniform float time;
 uniform vec2 resolution;
 uniform mat4 view;
+uniform bool isColored;
 uniform mat4 projection;
 uniform mat4 modelViewMatrix;
 uniform mat4 modelViewProjectionMatrix;
@@ -35,6 +36,11 @@ struct Object {
     vec3 color;
     vec3 edge;
 };
+
+float smoothMin(float d1, float d2, float k) {
+    float h = exp(-k * d1) + exp(-k * d2);
+    return -log(h) / k;
+}
 
 vec3 hsb2rgb( vec3 c ){
     vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),
@@ -271,12 +277,15 @@ void main() {
        vec3 dif_z = getNormal(rPos + vec3(0.0, 0.0, eps));
 
        float max_dif = .99;
-       if(abs(dot(normal, dif_x)) < max_dif ||
-           abs(dot(normal, dif_y)) < max_dif || 
-           abs(dot(normal, dif_z)) < max_dif) {
-           // obj.color = vec3(abs(dot(normal, dif_x)), abs(dot(normal, dif_y)), abs(dot(normal, dif_z)));
-           obj.color = obj.edge;
-       }
+       
+        if(isColored) {
+            if(abs(dot(normal, dif_x)) < max_dif ||
+            abs(dot(normal, dif_y)) < max_dif || 
+            abs(dot(normal, dif_z)) < max_dif) {
+                    // obj.color = vec3(abs(dot(normal, dif_x)), abs(dot(normal, dif_y)), abs(dot(normal, dif_z)));
+                obj.color = obj.edge;
+            }
+        }
 		vec4 world = modelViewMatrix * vec4(rPos, 1.0);
 		gPosition = vec4(world.xyz, 1.0);
 		gNormal = vec4(mat3(modelViewMatrix) * normal, 1.0);

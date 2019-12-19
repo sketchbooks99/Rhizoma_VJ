@@ -119,6 +119,24 @@ public:
 	void keyPressed(int key);
 	string getName();
 
+	struct Lifetime {
+		float age;
+		float maxAge;
+	};
+
+	struct Particle {
+		ofVec3f pos;
+		ofVec3f vel;
+	};
+
+	struct rect {
+		ofVec2f pos;
+		ofVec2f vel;
+
+		void update() { pos += vel; }
+		void draw() { ofDrawRectangle(pos, 200, 100); }
+	};
+
 private:
 
 	void scene1();
@@ -126,36 +144,37 @@ private:
 	void scene3();
 	void scene4();
 	void scene5();
+	void soundScene();
+	//void scene5();
 	void sceneBurst();
 
 	void drawWall();
 
-	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo;
-	myCamera cam;
-	ofShader renderShader, volumetricShader, planeShader, wallShader, sphereShader, boxShader;
+	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo, soundFbo;
+	ofShader renderShader, volumetricShader, planeShader, wallShader, sphereShader, boxShader, particleCompute;
+	ofShader renderParticle;
 
 	ofxPanel gui;
 	ofParameter<float> density, weight, decay, exposure, screenY;
 	ofxToggle isColored, isPixeled, isReactive;
 
 	// camera
-	vector<ofVec3f> camPoses;
+	myCamera cam;
+	vector<ofVec3f> camRadiuses;
+	vector<ofVec3f> timeOffsets;
 	int camIdx;
+	int attIdx;
 
 	float time;
-	int sceneMode;
-
-	ofVboMesh plane, audioPlane, wall, box;
+	int sceneMode, childScene;
+	bool sceneArray[5][5];
+	vector<rect> rects;
+	
+	ofVboMesh plane, audioPlane, wall, box, sphere, particle;
 	float planeHeight;
 	float wallOffset = 1.0f;
 
-	//------------------------------- Don't use -------------------------------
-	// Bvh
-	ofxBvh bvh; 
-	ofVboMesh sphere;
-	vector<string> filenames;
-	string filename;
-	ofShader dancerShader, pixelizeDancer, bufferShader, copy;
-	ofBufferObject posBuffer;
-	ofTexture posTex;
+	// Particle 
+	vector<ofVec3f> spawnPoints;
+	ofBufferObject spawnBuffer, positionBuffer, lifeBuffer;
 };

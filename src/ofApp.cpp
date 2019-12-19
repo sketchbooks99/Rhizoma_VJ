@@ -56,6 +56,7 @@ void ofApp::setup() {
 	stateMachine.getSharedData().gui.add(fps.set("fps", 60, 0, 60));
 	stateMachine.getSharedData().gui.add(isKicked.setup("isKick", false));
 	stateMachine.getSharedData().gui.add(bloomStrength.set("bloom", 0.0, 0.0, 5.0));
+	stateMachine.getSharedData().gui.add(isZoomBlurReactive.setup("isZoomBlurReacitive", true));
 
 	// Post Effect settings
 	stateMachine.getSharedData().post.init(ofGetWidth(), ofGetHeight());
@@ -95,9 +96,9 @@ void ofApp::setup() {
 	stateMachine.addState<SceneE>();
 	stateMachine.addState<SceneF>();
 	//stateMachine.addState<Debug>();
-	// stateMachine.changeState("SceneA");
+	 stateMachine.changeState("SceneA");
 	// stateMachine.changeState("SceneB");
-	stateMachine.changeState("SceneC");
+	//stateMachine.changeState("SceneC");
 	// stateMachine.changeState("SceneD");
 	// stateMachine.changeState("SceneE");
 	// stateMachine.changeState("SceneF");
@@ -113,8 +114,12 @@ void ofApp::update(){
 	sound = stateMachine.getSharedData().volume;
 
 	stateMachine.getSharedData().rgbShift->setAmount(std::min(stateMachine.getSharedData().volume * 0.1f, 0.01f));
-	if (isZoomBlurReactive) {
-		stateMachine.getSharedData().zoomBlur->setEnabled(stateMachine.getSharedData().isKicked);
+	stateMachine.getSharedData().zoomBlur->setWeight(std::min(stateMachine.getSharedData().volume * 10.0f, 0.3f));
+	if (stateMachine.getSharedData().beyoon->getEnabled()) {
+		float seed = ofRandom(0, 10);
+		if (seed > 7.0) {
+			stateMachine.getSharedData().beyoon->setOffset(ofVec2f(ofRandom(-0.7, 0.7), ofRandom(-0.8, 0.8)));
+		}
 	}
 	fps = ofGetFrameRate();
 
@@ -143,6 +148,7 @@ void ofApp::keyPressed(int key){
 	case '1':
 		stateMachine.changeState("SceneA");
 		stateMachine.getSharedData().bloom->setStrength(1.0);
+		stateMachine.getSharedData().bloom->setEnabled(true);
 		break;
 	case '2':
 		stateMachine.changeState("SceneB");

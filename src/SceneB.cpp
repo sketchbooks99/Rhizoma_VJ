@@ -99,9 +99,6 @@ void SceneB::setup() {
 	timeOffsets.push_back(ofVec3f(0.2));
 	for(int i = 0; i < 3; i++) {
 		ofVec3f radius;
-		/*radius.x = ofRandom(wallSize.x / 2, wallSize.x * 2);
-		radius.y = ofRandom(wallSize.y / 2, wallSize.y * 2);
-		radius.z = ofRandom(wallSize.z / 2, wallSize.z * 2);*/
 		radius.x = ofRandom(wallSize.x, wallSize.x * 3);
 		radius.y = ofRandom(wallSize.y, wallSize.y * 3);
 		radius.z = ofRandom(wallSize.z, wallSize.z * 3);
@@ -149,9 +146,9 @@ void SceneB::update() {
 	}*/
 	switch(sceneMode) {
 	case 0:
-		forceBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
+		forceBuffer.bind(GL_SHADER_STORAGE_BUFFER);
 		forceBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-		dataBuffer.unbind(GL_SHADER_STORAGE_BUFFER);
+		dataBuffer.bind(GL_SHADER_STORAGE_BUFFER);
 		dataBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 1);
 
 		scene1();

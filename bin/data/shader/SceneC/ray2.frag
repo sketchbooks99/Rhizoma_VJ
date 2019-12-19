@@ -36,6 +36,7 @@ float sphere(vec3 p) {
 }
 
 float distanceFunc(vec3 p) {
+	p.z -= time * 3.0;
 	return sphere(trans(p));
 }
 

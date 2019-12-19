@@ -15,10 +15,7 @@ out Vertex {
 } vertex;
 
 void main() {
-    vec2 scaledUV = texcoord * 5.0;
-    float n = cnoise(vec2(scaledUV.x * sin(time * 0.533), scaledUV.y * cos(time * 0.789)));
-    vec3 newVertex = position.xyz + normal * n * 10.0;
-    gl_Position = vec4(newVertex, 1.0);
+    gl_Position = position;
     vertex.texcoord = texcoord;
     vertex.color = color;
 }

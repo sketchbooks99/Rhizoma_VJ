@@ -4,7 +4,11 @@
 void SceneC::setup() {
 	gBufferShader.load("shader/SceneC/gBuffer.vert", "shader/SceneC/gBuffer.frag");
 	//gRenderShader.load("shader/SceneC/gRender.vert", "shader/SceneC/gRender.frag");
-	rayShader.load("shader/SceneC/ray.vert", "shader/SceneC/ray2.frag");
+	ray[0].load("shader/SceneC/ray.vert", "shader/SceneC/ray0.frag");
+	ray[1].load("shader/SceneC/ray.vert", "shader/SceneC/ray1.frag");
+	ray[2].load("shader/SceneC/ray.vert", "shader/SceneC/ray2.frag");
+	ray[3].load("shader/SceneC/ray.vert", "shader/SceneC/ray3.frag");
+	ray[4].load("shader/SceneC/ray.vert", "shader/SceneC/ray4.frag");
 	lightingShader.load("shader/SceneC/lighting.vert", "shader/SceneC/lighting.frag");
 
 	createGBuffer();
@@ -37,6 +41,7 @@ void SceneC::setup() {
 	gui.setup();
 	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
 	gui.add(showTex.setup("showTex", false));
+	gui.add(isColored.setup("isColored", false));
 
 	sceneMode = 0;
 
@@ -54,14 +59,24 @@ void SceneC::setup() {
 // =============================================================
 void SceneC::update() {
 	time = getSharedData().time;
-	switch (sceneMode) {
+	/*switch (sceneMode) {
 	case 0:
 		scene1();
 		break;
 	case 1:
 		scene2();
 		break;
-	}
+	case 2:
+		scene3();
+		break;
+	case 3:
+		scene4();
+		break;
+	case 4:
+		scene5();
+		break;
+	}*/
+	scene1();
 }
 
 // =============================================================
@@ -81,6 +96,31 @@ void SceneC::scene1() {
 	lightPos = ofVec3f(10, 10, 10);
 	glEnable(GL_DEPTH_TEST);
 
+	// Render Geometry to G-Buffer
+	/*gFbo.begin();
+	gFbo.activateAllDrawBuffers();
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	cam.begin();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 model;
+	model.rotate(time * 50.0, 1.0, 0.7, 0.4);
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+
+	gBufferShader.begin();
+	gBufferShader.setUniformMatrix4f("model", model);
+	gBufferShader.setUniformMatrix4f("view", view);
+	gBufferShader.setUniformMatrix4f("peojection", projection);
+	gBufferShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
+	box.draw(OF_MESH_FILL);
+	gBufferShader.end();
+
+	cam.end();
+	gFbo.end();*/
+
 	// Render ray marching
 	gFbo.begin();
 	gFbo.activateAllDrawBuffers();
@@ -91,20 +131,21 @@ void SceneC::scene1() {
 	ofMatrix4x4 projection = cam.getProjectionMatrix();
 	ofMatrix4x4 view = ofGetCurrentViewMatrix();
 
-	rayShader.begin();
-	rayShader.setUniform1f("time", time);
-	rayShader.setUniformMatrix4f("view", view);
-	rayShader.setUniform2f("resolution", gFbo.getWidth(), gFbo.getHeight());
-	rayShader.setUniformMatrix4f("projection", projection);
-	rayShader.setUniform3f("camPos", cam.getGlobalPosition());
-	rayShader.setUniform3f("camUp", cam.getUpDir());
-	rayShader.setUniform1f("fov", cam.getFov());
-	rayShader.setUniform1f("farClip", cam.getFarClip());
-	rayShader.setUniform1f("nearClip", cam.getNearClip());
+	ray[sceneMode].begin();
+	ray[sceneMode].setUniform1f("time", time);
+	ray[sceneMode].setUniformMatrix4f("view", view);
+	ray[sceneMode].setUniform2f("resolution", gFbo.getWidth(), gFbo.getHeight());
+	ray[sceneMode].setUniformMatrix4f("projection", projection);
+	ray[sceneMode].setUniform3f("camPos", cam.getGlobalPosition());
+	ray[sceneMode].setUniform3f("camUp", cam.getUpDir());
+	ray[sceneMode].setUniform1i("isColored", isColored);
+	ray[sceneMode].setUniform1f("fov", cam.getFov());
+	ray[sceneMode].setUniform1f("farClip", cam.getFarClip());
+	ray[sceneMode].setUniform1f("nearClip", cam.getNearClip());
 
 	quad.draw(OF_MESH_FILL);
 
-	rayShader.end();
+	ray[sceneMode].end();
 	cam.end();
 	gFbo.end();
 
@@ -133,34 +174,17 @@ void SceneC::scene1() {
 
 //--------------------------------------------------------------
 void SceneC::scene2() {
-	// Render Geometry to G-Buffer
-	/*gFbo.begin();
-	gFbo.activateAllDrawBuffers();
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	cam.begin();
-	ofMatrix4x4 projection = cam.getProjectionMatrix();
-	ofMatrix4x4 model;
-	model.rotate(time * 50.0, 1.0, 0.7, 0.4);
-	ofMatrix4x4 view = ofGetCurrentViewMatrix();
-	ofMatrix4x4 mvpMatrix = model * view * projection;
-	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
-
-	gBufferShader.begin();
-	gBufferShader.setUniformMatrix4f("model", model);
-	gBufferShader.setUniformMatrix4f("view", view);
-	gBufferShader.setUniformMatrix4f("peojection", projection);
-	gBufferShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
-	box.draw(OF_MESH_FILL);
-	gBufferShader.end();
-
-	cam.end();
-	gFbo.end();*/
 }
 
 //--------------------------------------------------------------
-void SceneC::scene3() {
+void SceneC::scene3() { // simple scene
+}
+//--------------------------------------------------------------
+void SceneC::scene4() { // fucking good
+}
+//--------------------------------------------------------------
+void SceneC::scene5() { // ray & sphere
 }
 
 // =============================================================
@@ -230,12 +254,8 @@ void SceneC::keyPressed(int key) {
 	case 'b':
 		sceneMode = 4;
 		break;
-	case 'n':
-		sceneMode = 5;
-		break;
-	case 'm':
-		sceneMode = 6;
-		break;
+	case 's':
+		isColored = !isColored;
 	}
 }
 

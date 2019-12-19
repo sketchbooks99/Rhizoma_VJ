@@ -14,6 +14,7 @@ class SceneC : public itg::ofxState<SharedData> {
 	void scene2();
 	void scene3();
 	void scene4();
+	void scene5();
 
 	// Custom Functions
 	void createGBuffer();
@@ -26,12 +27,14 @@ class SceneC : public itg::ofxState<SharedData> {
 
 	// Shaders & fbo
 	ofShader rayShader, postShader, lightingShader, gBufferShader, gRenderShader;
+	//ofShader ray2, ray3, ray4;
+	ofShader ray[5];
 	ofFbo renderFbo, gFbo, lightingFbo;
 	ofVboMesh quad;
 	ofVec3f lightPos;
 
 	ofxPanel gui;
-	ofxToggle isNormal, isDepth, isPosition, isRender;
+	ofxToggle isNormal, isDepth, isPosition, isRender, isColored;
 	ofxToggle showTex;
 
 	// GPU Particles

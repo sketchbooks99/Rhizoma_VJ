@@ -28,19 +28,15 @@ void SceneA::setup() {
 	wallShader.load("shader/SceneA/wallShader.vert", "shader/SceneA/wallShader.frag");// , "shader/SceneA/wallShader.geom");
 	boxShader.load("shader/SceneA/box.vert", "shader/SceneA/box.frag", "shader/SceneA/box.geom");
 	renderParticle.load("shader/SceneA/renderParticle.vert", "shader/SceneA/renderParticle.frag");
-	particleCompute.loadCompute("cmopute.glsl");
+	particleCompute.loadCompute("shader/SceneA/compute.glsl");
 
 	// Init custom GUI
 	gui.setup();
 	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
-	gui.add(density.set("Density", 0.07, 0.0, 1.0));
-	gui.add(weight.set("Weight", 1.0, 0.0, 1.0));
-	gui.add(decay.set("decay", 0.97, 0.0, 1.0));
-	gui.add(exposure.set("exposure", 1.0, 0.0, 1.0));
-	gui.add(screenY.set("ScreenY", -10.0, -10.0, 0.0)); 
 	gui.add(isPixeled.setup("isPixeled", false));
 	gui.add(isColored.setup("isColored", false));
 	gui.add(isReactive.setup("isReactive", false));
+	gui.add(isLayer.setup("isLayer", false));
 
 	// Geometry settings
 	int xRes = 300, yRes = 300;
@@ -59,7 +55,7 @@ void SceneA::setup() {
 
 
 	// Prepare to particle
-	int numParticlePerSpawn = 512;
+	int numParticlePerSpawn = 4096;
 	for (int i = 0; i < 10; i++) {
 		float x = ofRandom(-100, 100);
 		float y = 30.0;
@@ -70,12 +66,16 @@ void SceneA::setup() {
 	spawnBuffer.allocate(spawnPoints, GL_DYNAMIC_DRAW);
 	spawnBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 
+	// Position and Velocity data for particle
 	vector<Particle> bufferData;
 	bufferData.resize(numParticlePerSpawn * spawnPoints.size());
 	for (auto& b : bufferData) {
-		b.pos.x = 0.0;
+		/*b.pos.x = 0.0;
 		b.pos.y = 0.0;
-		b.pos.z = 0.0;
+		b.pos.z = 0.0;*/
+		b.pos.x = ofRandom(-1.0, 1.0);
+		b.pos.y = ofRandom(-1.0, 1.0);
+		b.pos.z = ofRandom(-1.0, 1.0);
 
 		b.vel.x = 0.0;
 		b.vel.y = 0.0;
@@ -84,15 +84,19 @@ void SceneA::setup() {
 	positionBuffer.allocate(bufferData, GL_DYNAMIC_DRAW);
 	positionBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 1);
 
+	//particle.setMode(OF_PRIMITIVE_POINTS);
 	for (int i = 0; i < bufferData.size(); i++) {
 		particle.addVertex(ofVec3f(0, 0, 0));
+		particle.addTexCoord(ofVec2f(i, 0));
+		particle.addColor(ofFloatColor(1.0, 1.0, 1.0, 1.0));
 	}
 
 	vector<Lifetime> lifetimes;
 	lifetimes.resize(numParticlePerSpawn * spawnPoints.size());
 	for (auto& l : lifetimes) {
-		l.age = ofRandom(0.0, 1.0);
-		l.maxAge = ofRandom(1.0, 3.0);
+		//l.age = ofRandom(0.0, 1.0);
+		l.maxAge = (int)ofRandom(1.0, 4.0);
+		l.age = 0.0;
 	}
 	lifeBuffer.allocate(lifetimes, GL_DYNAMIC_DRAW);
 	lifeBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 2);
@@ -125,8 +129,6 @@ void SceneA::setup() {
 		offset.y = ofRandom(-1.5, 1.5);
 		offset.z = ofRandom(-1.5, 1.5);
 		timeOffsets.push_back(offset);
-
-
 	}
 }
 
@@ -181,9 +183,8 @@ void SceneA::draw() {
 
 //-----------------------------------------------------------------------------------------
 void SceneA::soundScene() {
-	soundFbo.begin();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	ofPushMatrix();
 	ofTranslate(0, ofGetHeight() / 2);
 	if (sceneArray[0][1]) {
@@ -209,22 +210,35 @@ void SceneA::soundScene() {
 			}
 		}
 	}
+	if (sceneArray[0][3]) {
+		float offsetX = ofGetWidth() / 50;
+		ofSetColor(255);
+		float preY = 0.0;
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 50; j++) {
+				float x = offsetX * j;
+				float y = ofNoise(time * 100.0 + i) * ofGetHeight() - ofGetHeight()/2;
+				ofDrawLine(ofVec2f((j - 1) * offsetX, preY), ofVec2f(x, y));
+				preY = y;
+			}
+		}
+	}
 	for (int i = 0; i < 20; i++) {
 		ofSetColor(ofFloatColor(fmod(time * 3.0 + i * 0.01, 1.0)));
 		ofDrawRectangle(i * 100, getSharedData().left[i] * 800, 50, getSharedData().left[i] * 2000);
 	}
 	ofPopMatrix();
-
-	soundFbo.end();
 }
 
 // =========================================================================================
 void SceneA::scene1() {
-
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	soundScene();
+	renderFbo.end();
 
 	getSharedData().post.begin();
-	soundFbo.draw(0, 0);
+	renderFbo.draw(0, 0);
 	getSharedData().post.end();
 }
 
@@ -251,6 +265,9 @@ void SceneA::scene2() {
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
+
+	if(isLayer)
+		soundScene();
 	renderFbo.end();
 
 	getSharedData().post.begin();
@@ -311,42 +328,34 @@ void SceneA::scene4() {
 	particleCompute.begin();
 	particleCompute.setUniform1f("time", time);
 	particleCompute.setUniform1f("timestep", 0.01);
-	particleCompute.setUniform1f("scale", 0.1);
+	particleCompute.setUniform1f("scale", 0.02);
 	particleCompute.dispatchCompute((positionBuffer.size() + 1024 - 1) / 1024, 1, 1);
 	particleCompute.end();
 
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-	float radius = 150;
-	cam.setPosition(sin(time * 0.3) * radius, -50 , cos(time * 0.3) * radius);
-	cam.lookAt(spawnPoints[attIdx]);
+	cam.setPosition(
+		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x) * 2.0,
+		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y),
+		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z) * 2.0
+	);
+	cam.lookAt(ofVec3f(0, 0, 0));
 
 	renderFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
-	/*sphereShader.begin();
-	sphereShader.setUniform1f("time", time);
-	sphereShader.setUniform1f("volume", getSharedData().volume);
-	sphere.draw(OF_MESH_FILL);
-	sphereShader.end();*/
-
 	renderParticle.begin();
+	renderParticle.setUniform1f("time", time);
 	particle.draw(OF_MESH_POINTS);
+	if (sceneArray[sceneMode][1])
+		renderParticle.setUniform1i("isColored", true);
+	else 
+		renderParticle.setUniform1i("isColored", false);
+	if (sceneArray[sceneMode][2])
+		particle.draw(OF_MESH_WIREFRAME);
 	renderParticle.end();
-	
-	for (int i = 0; i < spawnPoints.size(); i++) {
-		ofPushMatrix();
-		ofTranslate(spawnPoints[i]);
-		ofRotateXDeg(90);
-		ofDrawCircle(ofVec3f(0), 2);
-		ofPopMatrix();
-		for (int j = 0; j < 4; j++) {
-			int otherIdx = (i + j < spawnPoints.size()) ? i + j : i + j - spawnPoints.size();
-			ofDrawLine(spawnPoints[i], spawnPoints[otherIdx]);
-		}
-	}
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
@@ -393,10 +402,11 @@ void SceneA::keyPressed(int key) {
 	int NUM_BRIGHT = 0;
 	switch (key) {
 	case 'a': // camera change
-		if (sceneMode == 3) attIdx = (int)ofRandom(0, spawnPoints.size());
+		//if (sceneMode == 3) attIdx = (int)ofRandom(0, spawnPoints.size());
 		if (sceneMode > 0) camIdx = (int)ofRandom(0, 4);
 		break;
 	case 's':
+		isLayer = !isLayer;
 		break;
 	// Change child scene
 	case 'd':
@@ -416,18 +426,19 @@ void SceneA::keyPressed(int key) {
 	case 'v':  // pop up cube
 		sceneMode = 3;
 		isColored = false;
+		getSharedData().bloom->setStrength(3.0);
 		break;
 	case 'b':  // room
 		sceneMode = 4;
 		break;
-	case 'n': // geometry in cube
-		sceneMode = 5;
-		break;
-	case 'm': 
-		sceneMode = 6;
+	//case 'n': // geometry in cube
+	//	sceneMode = 5;
+	//	break;
+	//case 'm': 
+	//	sceneMode = 6;
 		break;
 	case 'g':
-		sceneArray[sceneMode][0] = true;
+		sceneArray[sceneMode][0] = !sceneArray[sceneMode][0];
 		break;
 	case 'h':
 		sceneArray[sceneMode][1] = !sceneArray[sceneMode][1];
@@ -447,85 +458,4 @@ void SceneA::keyPressed(int key) {
 // =========================================================================================
 string SceneA::getName() {
 	return "SceneA";
-}
-
-// =========================================================================================
-// circle Burst
-void SceneA::sceneBurst() {
-	//cam.customSetPosition(camPoses[camIdx], ofVec3f(0, 0, 0));
-
-	// Occluding Rendering Pass
-	occludeFbo.begin();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	cam.begin();
-	glEnable(GL_DEPTH_TEST);
-
-	ofPushMatrix();
-	ofRotateXDeg(90);
-
-	renderShader.begin();
-	// ----------------------------------------
-	// render bright geometry
-	// ----------------------------------------
-
-	renderShader.end();
-
-	ofPopMatrix();
-
-	glDisable(GL_DEPTH_TEST);
-	cam.end();
-	occludeFbo.end();
-
-	// Normal Rendering Pass
-	normalFbo.begin();
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	cam.begin();
-	glEnable(GL_DEPTH_TEST);
-
-	ofPushMatrix();
-	
-	// ----------------------------------------
-	// render normal geometry
-	// ----------------------------------------
-
-	ofPopMatrix();
-
-	ofDisableAlphaBlending();
-
-	glDisable(GL_DEPTH_TEST);
-	cam.end();
-
-	normalFbo.end();
-
-	// Volumetric Pass
-	volumetricFbo.begin();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	volumetricShader.begin();
-	volumetricShader.setUniformTexture("occludeTex", occludeFbo.getTexture(), 0);
-	volumetricShader.setUniformTexture("colorTex", normalFbo.getTexture(), 1);
-	volumetricShader.setUniform3f("screenLightPos", 0.5, screenY, 0.0);
-	volumetricShader.setUniform1f("density", density);
-	volumetricShader.setUniform1f("weight", weight);
-	volumetricShader.setUniform1f("decay", decay);
-	volumetricShader.setUniform1f("exposure", exposure);
-
-	//renderFbo.draw(0, 0);
-	occludeFbo.draw(0, 0);
-
-	volumetricShader.end();
-
-	volumetricFbo.end();
-
-	// Post effect Pass
-	//getSharedData().post.begin();
-	renderFbo.begin();
-	volumetricFbo.draw(0, 0);
-	renderFbo.end();
-
-	getSharedData().post.begin();
-	renderFbo.draw(0, 0);
-	getSharedData().post.end();
-	//getSharedData().post.end();
 }

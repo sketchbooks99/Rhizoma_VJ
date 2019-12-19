@@ -151,12 +151,10 @@ private:
 	void drawWall();
 
 	ofFbo renderFbo, normalFbo, occludeFbo, volumetricFbo, soundFbo;
-	ofShader renderShader, volumetricShader, planeShader, wallShader, sphereShader, boxShader, particleCompute;
-	ofShader renderParticle;
+	ofShader renderShader, volumetricShader, planeShader, wallShader, sphereShader, boxShader, particleCompute, renderParticle;
 
 	ofxPanel gui;
-	ofParameter<float> density, weight, decay, exposure, screenY;
-	ofxToggle isColored, isPixeled, isReactive;
+	ofxToggle isColored, isPixeled, isReactive, isLayer;
 
 	// camera
 	myCamera cam;

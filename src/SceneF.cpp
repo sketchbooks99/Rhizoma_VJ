@@ -66,12 +66,6 @@ void SceneF::scene1() {
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
-	for (int i = 0; i < circles.size(); i++) {
-		circles[i].update();
-		circles[i].draw(time);
-		if (circles[i].getPosition().z < -1000) circles[i].setPosition(ofVec3f(0, 0, 1000));
-	}
-
 	ofPushMatrix();
 	ofRotateXDeg(90);
 	terrainShader.begin();

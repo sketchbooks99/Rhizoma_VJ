@@ -24,7 +24,7 @@ layout(std430, binding=1) buffer pos {
     Particle p[];
 };
 
-layout(std430, binding=2) buffer life {
+layout(std430, binding=2) buffer lifetimes {
     Lifetime l[];
 };
 
@@ -49,13 +49,14 @@ void main() {
 
     if (age >= maxAge) {
         age = 0.0;
-		maxAge = 1.0 + random(pos.xy) * 1.0;
+		// maxAge = 1.0 + random(pos.xy) * 1.0;
+        maxAge = 0.7;
+        // maxAge = 1.0;
         float theta = 2.0 * PI * random(pos.yy);
         float phi = PI * random(pos.zz);
         float r = random(pos.xy);
-		// pos = vec3(r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)) * 20.0;
+		pos = vec3(r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)) * 10.0;
         // pos = vec3(random(pos.xx + time * 0.1), random(pos.yy + time * 0.3), random(pos.zz + time * 0.5)) * 100.0;
-        pos = sp_pos;
 		vel = normalize(pos);
     }
 
@@ -70,6 +71,6 @@ void main() {
     p[id] = par;
 
     life.age = age;
-    iife.maxAge = maxAge;
+    life.maxAge = maxAge;
     l[id] = life;
 }

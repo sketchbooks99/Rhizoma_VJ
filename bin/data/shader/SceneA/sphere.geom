@@ -92,7 +92,7 @@ void main() {
         createTriangle(v0, v1, v2, c);
         // side
         // c = vec4(0.8, 0.3, 0.2, 1.0);
-        c = vec4(1.0, 0.0, 0.0, 1.0);
+        c = vec4(0.0, 0.5, 1.0, 1.0);
         createTriangle(v3, v0, v4, c);
         createTriangle(v4, v0, v1, c);
         createTriangle(v5, v4, v1, c);

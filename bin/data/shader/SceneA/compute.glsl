@@ -50,7 +50,7 @@ void main() {
     if (age >= maxAge) {
         age = 0.0;
 		// maxAge = 1.0 + random(pos.xy) * 1.0;
-        maxAge = 0.7;
+        maxAge = 1.5;
         // maxAge = 1.0;
         float theta = 2.0 * PI * random(pos.yy);
         float phi = PI * random(pos.zz);

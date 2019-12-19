@@ -19,6 +19,22 @@ void SceneC::setup() {
 	cam.setFov(70);
 	cam.setDistance(5.0);
 
+	// Camera positions
+	camRadiuses.push_back(ofVec3f(30, 30, 30));
+	timeOffsets.push_back(ofVec3f(0.2));
+	for (int i = 0; i < 3; i++) {
+		ofVec3f radius;
+		radius.x = ofRandom(20.0, 70.0);
+		radius.y = ofRandom(20.0, 70.0);
+		radius.z = ofRandom(20.0, 70.0);
+		camRadiuses.push_back(radius);
+
+		ofVec3f offset;
+		offset.x = ofRandom(-0.7, 0.7);
+		offset.y = ofRandom(-0.7, 0.7);
+		offset.z = ofRandom(-0.7, 0.7);
+		timeOffsets.push_back(offset);
+	}
 
 	// Plane to render ray marching
 	quad.setMode(OF_PRIMITIVE_TRIANGLE_FAN);
@@ -42,6 +58,7 @@ void SceneC::setup() {
 	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
 	gui.add(showTex.setup("showTex", false));
 	gui.add(isColored.setup("isColored", false));
+	gui.add(isShade.setup("isShade", true));
 
 	sceneMode = 0;
 
@@ -93,7 +110,21 @@ void SceneC::draw() {
 
 //--------------------------------------------------------------
 void SceneC::scene1() {
-	lightPos = ofVec3f(10, 10, 10);
+	switch (sceneMode) {
+	case 0:
+		cam.setPosition(sin(time) * 5.0, 0.0, cos(time) * 5.0);
+		cam.lookAt(ofVec3f(0, 0, 0));
+		break;
+	case 1:
+		cam.setPosition(0, 0, 10);
+		cam.lookAt(ofVec3f(0, 0, 0));
+		break;
+	case 2:
+		cam.setPosition(0, 0, 10);
+		cam.lookAt(ofVec3f(0, 0, 0));
+		break;
+	}
+	lightPos = ofVec3f(-10, -10, 10);
 	glEnable(GL_DEPTH_TEST);
 
 	// Render Geometry to G-Buffer
@@ -157,6 +188,7 @@ void SceneC::scene1() {
 	lightingShader.setUniformTexture("gNormal", gFbo.getTexture(1), 1);
 	lightingShader.setUniformTexture("gColor", gFbo.getTexture(2), 2);
 	lightingShader.setUniform3f("camPos", cam.getPosition());
+	lightingShader.setUniform1i("isShade",isShade);
 	lightingShader.setUniform3f("lightPos", lightPos);
 	quad.draw(OF_MESH_FILL);
 	lightingShader.end();
@@ -247,6 +279,7 @@ void SceneC::keyPressed(int key) {
 		break;
 	case 'c':
 		sceneMode = 2;
+		isShade = false;
 		break;
 	case 'v':
 		sceneMode = 3;

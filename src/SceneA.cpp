@@ -225,7 +225,7 @@ void SceneA::soundScene() {
 	}
 	for (int i = 0; i < 20; i++) {
 		ofSetColor(ofFloatColor(fmod(time * 3.0 + i * 0.01, 1.0)));
-		ofDrawRectangle(i * 100, getSharedData().left[i] * 800, 50, getSharedData().left[i] * 2000);
+		ofDrawRectangle(i * 100, getSharedData().left[i] * 800, 50, getSharedData().left[i] * 5000.0f);
 	}
 	ofPopMatrix();
 }
@@ -410,6 +410,7 @@ void SceneA::keyPressed(int key) {
 		break;
 	// Change child scene
 	case 'd':
+		isColored = !isColored;
 		break;
 	case 'z': // simple 
 		sceneMode = 0;
@@ -426,7 +427,7 @@ void SceneA::keyPressed(int key) {
 	case 'v':  // pop up cube
 		sceneMode = 3;
 		isColored = false;
-		getSharedData().bloom->setStrength(3.0);
+		getSharedData().bloom->setStrength(2.0);
 		break;
 	case 'b':  // room
 		sceneMode = 4;

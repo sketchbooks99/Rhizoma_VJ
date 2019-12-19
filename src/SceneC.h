@@ -33,9 +33,14 @@ class SceneC : public itg::ofxState<SharedData> {
 	ofVboMesh quad;
 	ofVec3f lightPos;
 
+	vector<ofVec3f> camRadiuses;
+	vector<ofVec3f> timeOffsets;
+
 	ofxPanel gui;
-	ofxToggle isNormal, isDepth, isPosition, isRender, isColored;
+	ofxToggle isNormal, isDepth, isPosition, isRender, isColored, isShade;
 	ofxToggle showTex;
+
+	bool sceneArray[5][5];
 
 	// GPU Particles
 	int numParticles, textureRes;

@@ -34,6 +34,9 @@ void SceneD::setup() {
 	size = 100.0;
 
 	sceneMode = 0;
+
+	plane = ofPlanePrimitive(1000, 1000, 100, 100).getMesh();
+	box = ofBoxPrimitive(100, 100, 100).getMesh();
 }
 
 //--------------------------------------------------------------
@@ -85,13 +88,13 @@ void SceneD::scene1() {
 }
 
 //--------------------------------------------------------------
-void SceneD::scene2() {
+void SceneD::scene2() { // trail Ç™Ç§Ç‹Ç≠Ç¢Ç©Ç»Ç¢ÅB
 	trail.setWidth(7.0);
 	trail.update();
 
 	renderFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	ofBackground(ofFloatColor(0.3, 1.0));
+	//ofBackground(ofFloatColor(0.3, 1.0));
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
@@ -109,6 +112,18 @@ void SceneD::scene2() {
 	getSharedData().post.begin();
 	renderFbo.draw(0, 0);
 	getSharedData().post.end();
+}
+
+void SceneD::scene3() {
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//ofBackground(ofFloatColor(0.3, 1.0));
+	cam.begin();
+	glEnable(GL_DEPTH_TEST);
+
+	glDisable(GL_DEPTH_TEST);
+	cam.end();
+	renderFbo.end();
 }
 //--------------------------------------------------------------
 void SceneD::keyPressed(int key) {

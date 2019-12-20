@@ -17,7 +17,7 @@ public:
 	void scene3();
 
 private:
-	ofVboMesh boxel;
+	ofVboMesh boxel, plane, box;
 	ofFbo renderFbo;
 	ofShader boxelShader;
 

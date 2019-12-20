@@ -163,6 +163,14 @@ private:
 	int camIdx;
 	int attIdx;
 
+	vector<ofVec3f> scenePoint;
+	vector<ofColor> circleColor;
+	vector<ofVec3f> circleCamPosition;
+	int circleCamIdx, scene5Idx = 0;
+	ofxToggle isSpawn, isSpawnParticle;
+	int numCircle = 0;
+	ofShader particleCompute1;
+
 	float time;
 	int sceneMode, childScene;
 	bool sceneArray[5][5];

@@ -29,6 +29,7 @@ void SceneA::setup() {
 	boxShader.load("shader/SceneA/box.vert", "shader/SceneA/box.frag", "shader/SceneA/box.geom");
 	renderParticle.load("shader/SceneA/renderParticle.vert", "shader/SceneA/renderParticle.frag");
 	particleCompute.loadCompute("shader/SceneA/compute.glsl");
+	particleCompute1.loadCompute("shader/SceneA/compute1.glsl");
 
 	// Init custom GUI
 	gui.setup();
@@ -37,6 +38,8 @@ void SceneA::setup() {
 	gui.add(isColored.setup("isColored", false));
 	gui.add(isReactive.setup("isReactive", false));
 	gui.add(isLayer.setup("isLayer", false));
+	gui.add(isSpawn.setup("isSpawn", false));
+	gui.add(isSpawnParticle.setup("isSpawnParticle", false));
 
 	// Geometry settings
 	int xRes = 300, yRes = 300;
@@ -57,22 +60,80 @@ void SceneA::setup() {
 	// Sphere man
 	sphere = ofIcoSpherePrimitive(16, 2).getMesh();
 
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			if (j == 0) sceneArray[i][j] = true;
+			else sceneArray[i][j] = false;
+		}
+	}
+
+	// General Settings
+	time = getSharedData().time;
+	camIdx = 0;
+	attIdx = 0;
+	sceneMode = 4;
+	cam.setDistance(150);
+
+	camRadiuses.push_back(ofVec3f(60.0));
+	timeOffsets.push_back(ofVec3f(0.4));
+	for (int i = 0; i < 4; i++) {
+		ofVec3f radius;
+		radius.x = ofRandom(50, 150);
+		radius.y = ofRandom(50, 150);
+		radius.z = ofRandom(50, 150);
+		camRadiuses.push_back(radius);
+
+		ofVec3f offset;
+		offset.x = ofRandom(-1.5, 1.5);
+		offset.y = ofRandom(-1.5, 1.5);
+		offset.z = ofRandom(-1.5, 1.5);
+		timeOffsets.push_back(offset);
+	}
+
+	// center
+	float offsetY = 700;
+	float offsetZ = -200;
+	float x = 0;
+	float y = 0;
+	scenePoint.push_back(ofVec3f(x, y, 0.0));
+	spawnPoints.push_back(ofVec3f(x, 0.0, y));
+	circleCamPosition.push_back(ofVec3f(x, y + offsetY, offsetZ));
+	x = ofRandom(-ofGetWidth()/2, 0);
+	y = ofRandom(-ofGetHeight()/2, 0);
+	scenePoint.push_back(ofVec3f(x, y, 0.0));
+	spawnPoints.push_back(ofVec3f(x, 0.0, y));
+	circleCamPosition.push_back(ofVec3f(x, y + offsetY, offsetZ));
+	x = ofRandom(-ofGetWidth() / 2, 0);
+	y = ofRandom(0, ofGetHeight());
+	scenePoint.push_back(ofVec3f(x, y, 0.0));
+	spawnPoints.push_back(ofVec3f(x, 0.0, y));
+	circleCamPosition.push_back(ofVec3f(x, y + offsetY, offsetZ));
+	x = ofRandom(0, ofGetWidth() / 2);
+	y = ofRandom(0, ofGetHeight() / 2);
+	scenePoint.push_back(ofVec3f(x, y, 0.0));
+	spawnPoints.push_back(ofVec3f(x, 0.0, y));
+	circleCamPosition.push_back(ofVec3f(x, y + offsetY, offsetZ));
+	x = ofRandom(0, ofGetWidth() / 2);
+	y = ofRandom(-ofGetHeight()/2, 0);
+	scenePoint.push_back(ofVec3f(x, y, 0.0));
+	spawnPoints.push_back(ofVec3f(x, 0.0, y));
+	circleCamPosition.push_back(ofVec3f(x, y + offsetY, offsetZ));
+	circleColor.push_back(ofColor(255, 255, 100));
+	circleColor.push_back(ofColor(30, 100, 255, 100));
+	circleColor.push_back(ofColor(100, 255, 30, 100));
+	circleColor.push_back(ofColor(30, 255, 100, 100));
+	circleColor.push_back(ofColor(100, 30, 255, 100));
+	numCircle = 1;
+	circleCamIdx = 0;
 
 	// Prepare to particle
 	int numParticlePerSpawn = 4096;
-	for (int i = 0; i < 10; i++) {
-		float x = ofRandom(-100, 100);
-		float y = 30.0;
-		float z = ofRandom(-100, 100);
-		ofVec3f point = ofVec3f(x, y, z);
-		spawnPoints.push_back(point);
-	}
 	spawnBuffer.allocate(spawnPoints, GL_DYNAMIC_DRAW);
 	spawnBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 
 	// Position and Velocity data for particle
 	vector<Particle> bufferData;
-	bufferData.resize(numParticlePerSpawn * spawnPoints.size());
+	bufferData.resize(numParticlePerSpawn* spawnPoints.size());
 	for (auto& b : bufferData) {
 		/*b.pos.x = 0.0;
 		b.pos.y = 0.0;
@@ -96,44 +157,13 @@ void SceneA::setup() {
 	}
 
 	vector<Lifetime> lifetimes;
-	lifetimes.resize(numParticlePerSpawn * spawnPoints.size());
+	lifetimes.resize(numParticlePerSpawn* spawnPoints.size());
 	for (auto& l : lifetimes) {
-		//l.age = ofRandom(0.0, 1.0);
-		l.maxAge = (int)ofRandom(1.0, 4.0);
+		l.maxAge = (int)ofRandom(1.0, 3.0);
 		l.age = 0.0;
 	}
 	lifeBuffer.allocate(lifetimes, GL_DYNAMIC_DRAW);
 	lifeBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
-			if (j == 0) sceneArray[i][j] = true;
-			else sceneArray[i][j] = false;
-		}
-	}
-
-	// General Settings
-	time = getSharedData().time;
-	camIdx = 0;
-	attIdx = 0;
-	sceneMode = 0;
-	cam.setDistance(150);
-
-	camRadiuses.push_back(ofVec3f(60.0));
-	timeOffsets.push_back(ofVec3f(0.4));
-	for (int i = 0; i < 4; i++) {
-		ofVec3f radius;
-		radius.x = ofRandom(50, 150);
-		radius.y = ofRandom(50, 150);
-		radius.z = ofRandom(50, 150);
-		camRadiuses.push_back(radius);
-
-		ofVec3f offset;
-		offset.x = ofRandom(-1.5, 1.5);
-		offset.y = ofRandom(-1.5, 1.5);
-		offset.z = ofRandom(-1.5, 1.5);
-		timeOffsets.push_back(offset);
-	}
 }
 
 // =========================================================================================
@@ -264,6 +294,8 @@ void SceneA::scene2() {
 	sphereShader.begin();
 	sphereShader.setUniform1f("time", time);
 	sphereShader.setUniform1f("volume", getSharedData().volume);
+	sphereShader.setUniform3f("inColor", ofVec3f(0.2));
+	sphereShader.setUniform3f("outColor", ofVec3f(0.0, 0.5, 1.0));
 	sphere.draw(OF_MESH_FILL);
 	sphereShader.end();
 
@@ -322,6 +354,15 @@ void SceneA::scene3() {
 
 //------------------------------------------------------------------------------------------
 void SceneA::scene4() {
+
+	cam.setPosition(
+		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x) * 5.0,
+		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y) * 5.0,
+		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z) * 5.0
+	);
+	/*cam.setPosition(300, 300, 300);*/
+	cam.lookAt(ofVec3f(0, 0, 0));
+
 	spawnBuffer.bind(GL_SHADER_STORAGE_BUFFER);
 	spawnBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 	positionBuffer.bind(GL_SHADER_STORAGE_BUFFER);
@@ -333,26 +374,23 @@ void SceneA::scene4() {
 	particleCompute.setUniform1f("time", time);
 	particleCompute.setUniform1f("timestep", 0.01);
 	particleCompute.setUniform1f("scale", 0.02);
+	particleCompute.setUniform1i("isSpawn", isSpawn);
 	particleCompute.dispatchCompute((positionBuffer.size() + 1024 - 1) / 1024, 1, 1);
 	particleCompute.end();
-
-	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-	cam.setPosition(
-		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x) * 5.0,
-		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y) * 5.0,
-		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z) * 5.0
-	);
-	/*cam.setPosition(300, 300, 300);*/
-	cam.lookAt(ofVec3f(0, 0, 0));
 
 	renderFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
 
+	ofMatrix4x4 model;
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+
 	renderParticle.begin();
 	renderParticle.setUniform1f("time", time);
+	renderParticle.setUniform3f("pointColor", ofVec3f(-1.0, 0.0, 0.0));
 	particle.draw(OF_MESH_POINTS);
 	if (sceneArray[sceneMode][1])
 		renderParticle.setUniform1i("isColored", true);
@@ -361,6 +399,9 @@ void SceneA::scene4() {
 	if (sceneArray[sceneMode][2])
 		particle.draw(OF_MESH_WIREFRAME);
 	renderParticle.end();
+
+	if (isLayer)
+		soundScene();
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
@@ -380,10 +421,69 @@ void SceneA::scene4() {
 
 //------------------------------------------------------------------------------------------
 void SceneA::scene5() {
+
+	if (scene5Idx == 0) {
+		cam.setPosition(0, 0, ofGetHeight());
+		cam.lookAt(ofVec3f(0, 0, 0));
+	}
+	else if (scene5Idx == 1 || scene5Idx == 2) {
+		cam.setPosition(circleCamPosition[circleCamIdx]);
+		cam.lookAt(scenePoint[circleCamIdx]);
+		/*cam.setPosition(sin(time) * 1000, -100, cos(time) * 1000);
+		cam.lookAt(ofVec3f(0, 0, 0));*/
+	}
+
 	renderFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	cam.begin();
 	glEnable(GL_DEPTH_TEST);
+
+	ofMatrix4x4 model;
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 mvpMatrix = model * view * projection;
+	
+	ofEnableAlphaBlending();
+	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	for (int i = 0; i < numCircle; i++) {
+		for (int j = 0; j < 5 + (int)(getSharedData().left[i] * 300.0 * (numCircle + 1)); j++) {
+			ofNoFill();
+			ofSetColor((circleColor[i] + ofColor(ofRandom(-10, 10), ofRandom(-10, 10), ofRandom(-10, 10))) * (0.2 * (numCircle + 1)));
+			float x = sin(j * ofNoise(time * 300.0, j) * TWO_PI) * 20.0 + getSharedData().left[i] * 100.0;
+			float radius = ofNoise(i * 0.01 + time, j * 0.1) * (100.0 + ((numCircle + 1) * 0.5 * 100));
+			int seed = (int)ofRandom(0, 200);
+			ofVec3f offsetedPos = scenePoint[i] + ofVec3f(x, 0, 0);
+			ofDrawCircle(scenePoint[i] + ofVec3f(x, 0, 0), radius + getSharedData().left[i + seed] * 500.0);
+			ofSetColor(200, 200, 200, 100);
+			seed = (int)ofRandom(0, 10);
+			ofSetLineWidth(5);
+			if (seed > 3) ofDrawLine(offsetedPos, scenePoint[(int)ofRandom(0, numCircle)]);
+			ofFill();
+			ofSetColor(circleColor[i] + ofColor(ofRandom(-10, 10), ofRandom(-10, 10), ofRandom(-10, 10)));
+			ofDrawCircle(scenePoint[i] + ofVec3f(x, 0, 0) * 0.5, ofRandom(10, 30));
+		}
+	}
+
+	if (isSpawn) {
+		for (int i = 0; i < numCircle; i++) {
+			ofPushMatrix();
+			//ofTranslate(scenePoint[i] + ofVec3f(0, 0, -400));
+			ofTranslate(scenePoint[i] + ofVec3f(sin(time * 0.378 + i) * 500, cos(time * 0.378 + i) * 500, 300));
+			ofRotate(time * 30, (i+1) * 0.467 - (int)((i + 1) * 0.467), (i+1) * 0.378 - (int)((i + 1) * 0.467), (i+1) * 0.789 - (int)((i + 1) * 0.467));
+			ofScale(4,4,4);
+			sphereShader.begin();
+			sphereShader.setUniform1f("time", time);
+			sphereShader.setUniform1f("volume", getSharedData().volume);
+			sphereShader.setUniform3f("inColor", (ofVec3f(1.0) - ofVec3f(circleColor[i].r/255, circleColor[i].g/255, circleColor[i].b / 255)) * 0.2);
+			sphereShader.setUniform3f("outColor", ofVec3f(circleColor[i].r / 255, circleColor[i].g / 255, circleColor[i].b / 255));
+			sphere.draw(OF_MESH_FILL);
+			sphereShader.end();
+			ofPopMatrix();
+		}
+	}
+
+	if (isLayer)
+		soundScene();
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
@@ -420,6 +520,7 @@ void SceneA::keyPressed(int key) {
 	case 'a': // camera change
 		//if (sceneMode == 3) attIdx = (int)ofRandom(0, spawnPoints.size());
 		if (sceneMode > 0) camIdx = (int)ofRandom(0, 4);
+		circleCamIdx = (int)ofRandom(0, numCircle);
 		break;
 	case 's':
 		isLayer = !isLayer;
@@ -427,6 +528,9 @@ void SceneA::keyPressed(int key) {
 	// Change child scene
 	case 'd':
 		isColored = !isColored;
+		break;
+	case 'f':
+		numCircle = numCircle < 5 ? numCircle + 1 : 5;
 		break;
 	case 'z': // simple 
 		sceneMode = 0;
@@ -456,18 +560,25 @@ void SceneA::keyPressed(int key) {
 		break;
 	case 'g':
 		sceneArray[sceneMode][0] = !sceneArray[sceneMode][0];
+		scene5Idx = 0;
 		break;
 	case 'h':
 		sceneArray[sceneMode][1] = !sceneArray[sceneMode][1];
+		scene5Idx = 1;
 		break;
 	case 'j':
 		sceneArray[sceneMode][2] = !sceneArray[sceneMode][2];
+		scene5Idx = 2;
 		break;
 	case 'k':
 		sceneArray[sceneMode][3] = !sceneArray[sceneMode][3];
+		scene5Idx = 3;
+		if (sceneMode == 4) isSpawn = !isSpawn;
+		if (sceneMode == 5) isSpawnParticle = !isSpawnParticle;
 		break;
 	case 'l':
 		sceneArray[sceneMode][4] = !sceneArray[sceneMode][4];
+		scene5Idx = 4;
 		break;
 	}
 }

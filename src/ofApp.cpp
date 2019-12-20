@@ -163,7 +163,7 @@ void ofApp::keyPressed(int key){
 	case '4':
 		stateMachine.changeState("SceneD");
 		stateMachine.getSharedData().bloom->setEnabled(true);
-		stateMachine.getSharedData().bloom->setStrength(1.0);
+		stateMachine.getSharedData().bloom->setStrength(1.5);
 		break;
 	case '5':
 		stateMachine.changeState("SceneE");
@@ -172,7 +172,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case '6':
 		stateMachine.changeState("SceneF");
-		stateMachine.getSharedData().bloom->setEnabled(false);
+		stateMachine.getSharedData().bloom->setEnabled(true);
 		stateMachine.getSharedData().bloom->setStrength(0.5);
 		break;
 	// Post Effect enable/disable

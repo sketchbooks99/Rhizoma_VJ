@@ -8,7 +8,8 @@ int main( ){
 
 	s.setGLVersion(4, 5);
 	s.setSize(3840, 2160);
-	s.setPosition(ofVec2f(500, 0));
+	//s.setSize(1920, 1080);
+	s.setPosition(ofVec2f(1920, 0));
 	s.monitor = 1;
 	//s.windowMode = OF_FULLSCREEN;
 	s.resizable = true;
@@ -16,8 +17,8 @@ int main( ){
 	shared_ptr<ofAppBaseWindow> subWindow = ofCreateWindow(s);
 	
 
-	//s.setSize(1920, 1080);
-	s.setSize(960, 540);
+	s.setSize(1920, 1080);
+	//s.setSize(960, 540);
 	s.setPosition(ofVec2f(0, 0));
 	s.resizable = true;
 	//s.windowMode = OF_FULLSCREEN;

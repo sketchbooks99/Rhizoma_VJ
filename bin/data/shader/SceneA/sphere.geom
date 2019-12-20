@@ -13,6 +13,8 @@ uniform float planeHeight;
 uniform float time;
 uniform float volume;
 uniform int threshold;
+uniform vec3 inColor;
+uniform vec3 outColor;
 
 in Vertex {
     vec2 texcoord;
@@ -75,7 +77,7 @@ void main() {
     // EndPrimitive();
     vec3 v0, v1, v2, v3, v4, v5;
     // vec4 c = vec4(0.3, 0.2, 0.4, 0.5);
-    vec4 c = vec4(vec3(0.2), 1.0);
+    vec4 c = vec4(inColor, 1.0);
     if (n < 0.5) {
         v0 = gl_in[0].gl_Position.xyz * n + center * (1.0 - n);
         v1 = gl_in[1].gl_Position.xyz * n + center * (1.0 - n);
@@ -92,7 +94,7 @@ void main() {
         createTriangle(v0, v1, v2, c);
         // side
         // c = vec4(0.8, 0.3, 0.2, 1.0);
-        c = vec4(0.0, 0.5, 1.0, 1.0);
+        c = vec4(outColor, 1.0);
         createTriangle(v3, v0, v4, c);
         createTriangle(v4, v0, v1, c);
         createTriangle(v5, v4, v1, c);

@@ -1,7 +1,7 @@
 #version 440
 
 uniform mat4 modelViewProjectionMatrix;
-uniform float scale;
+uniform float scale = 1.0;
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices=36) out;

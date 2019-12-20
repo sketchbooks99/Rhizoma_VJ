@@ -2,8 +2,8 @@
 
 //-------------------------------------------------------------------------
 void SceneF::setup() {
-	int xRes = 40, yRes = 20;
-	terrain = ofPlanePrimitive(2000, 1000, xRes, yRes).getMesh();
+	int xRes = 100, yRes = 100;
+	terrain = ofPlanePrimitive(2000, 2000, xRes, yRes).getMesh();
 	terrainShader.load("shader/SceneF/terrain.vert", "shader/SceneF/terrain.frag", "shader/SceneF/terrain.geom");
 	for (int i = 0; i < xRes; i++) {
 		for (int j = 0; j < yRes; j++) {
@@ -35,14 +35,11 @@ void SceneF::setup() {
 
 //-------------------------------------------------------------------------
 void SceneF::update() {
-	cam.setPosition(0, -200, -500);
+	cam.setPosition(0, -600, -500);
 	cam.lookAt(ofVec3f(0, 0, 0));
 	time = getSharedData().time;
-	switch (sceneMode) {
-	case 0:
-		scene1();
-		break;
-	}
+	
+	scene1();
 
 	getSharedData().fbo.begin();
 	getSharedData().post.draw();
@@ -69,6 +66,12 @@ void SceneF::scene1() {
 	ofPushMatrix();
 	ofRotateXDeg(90);
 	terrainShader.begin();
+	if (sceneMode == 1) {
+		terrainShader.setUniform1i("isBoxel", true);
+	}
+	else {
+		terrainShader.setUniform1i("isBoxel", false);
+	}
 	terrainShader.setUniform1f("time", time);
 	terrainShader.setUniform3f("lightDir", -0.577, -0.577, 0.577);
 	terrain.draw(OF_MESH_FILL);
@@ -87,7 +90,7 @@ void SceneF::scene1() {
 //-------------------------------------------------------------------------
 void SceneF::keyPressed(int key) {
 	switch (key) {
-	case 'a':
+	case 'z':
 		sceneMode = 0;
 		break;
 	case 'x':

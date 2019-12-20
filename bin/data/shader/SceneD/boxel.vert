@@ -18,7 +18,7 @@ out Vertex {
 } vertex;
 
 void main() {
-    float noiseValue = cnoise(position.xyz * 0.01 + time);
+    float noiseValue = cnoise(position.xyz * 0.01 + vec3(0.0,0.0,time));
     float offset = noiseValue > 0.3 ? 0.4 : noiseValue < -0.3 ? -0.2 : 0.0;
     gl_Position = vec4(position.xyz + normal * offset * 150.0, 1.0);
     if(noiseValue > 0.3) vertex.color = vec4(outColor, .8);

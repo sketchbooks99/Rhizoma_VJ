@@ -142,7 +142,7 @@ Object distanceFunc(vec3 p) {
     vec3 q = p;
     // q = twist(p, 0.1);
     // q = rotate(q, time * 0.3, vec3(0.0, 0.0, 1.0));
-    q.yx = foldRotate(q.yx, 2.0);
+    q.yx = foldRotate(q.yx, 20.0);
     q -= vec3(0.0, 0.0, time * 3.0);
     float back_scene = max(three_bar(repeat(q, 1.5)), -three_tube(repeat(q, 0.3)));
     Object obj;
@@ -197,8 +197,7 @@ void main() {
         vec3 normal = getNormal(rPos);
         vec3 shaded_col = blinn_phong(abs(normal), lightDir, -cDir, obj.color);
         // gl_FragColor = vec4(shaded_col, 1.0);
-        vec4 world =
-        modelViewMatrix * vec4(rPos, 1.0);
+        vec4 world = modelViewMatrix * vec4(rPos, 1.0);
         gPosition = vec4(world.xyz, 1.0);
         gNormal = vec4(mat3(modelViewMatrix) * normal, 1.0);
         gColor = vec4(obj.color, 1.0);

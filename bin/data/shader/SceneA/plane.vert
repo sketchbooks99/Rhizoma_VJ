@@ -18,4 +18,5 @@ void main() {
     vec3 newVertex = position.xyz + normal * sin_val;
     gl_Position = modelViewProjectionMatrix * vec4(newVertex, 1.0);
     vColor = color;
+    gl_PointSize = 3.0;
 }

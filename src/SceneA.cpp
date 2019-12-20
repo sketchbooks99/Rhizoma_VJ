@@ -50,6 +50,10 @@ void SceneA::setup() {
 	}
 	wall = ofBoxPrimitive(1, 10, 1).getMesh();
 
+	// audio plane
+	int bufferSize = getSharedData().left.size();
+	//audioPlane = ofPlanePrimitive(300, 300, bufferSize, bufferSize).getMesh();
+
 	// Sphere man
 	sphere = ofIcoSpherePrimitive(16, 2).getMesh();
 
@@ -335,10 +339,11 @@ void SceneA::scene4() {
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 	cam.setPosition(
-		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x) * 2.0,
-		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y),
-		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z) * 2.0
+		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x) * 5.0,
+		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y) * 5.0,
+		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z) * 5.0
 	);
+	/*cam.setPosition(300, 300, 300);*/
 	cam.lookAt(ofVec3f(0, 0, 0));
 
 	renderFbo.begin();
@@ -375,7 +380,18 @@ void SceneA::scene4() {
 
 //------------------------------------------------------------------------------------------
 void SceneA::scene5() {
+	renderFbo.begin();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	cam.begin();
+	glEnable(GL_DEPTH_TEST);
 
+	glDisable(GL_DEPTH_TEST);
+	cam.end();
+	renderFbo.end();
+
+	getSharedData().post.begin();
+	renderFbo.draw(0, 0);
+	getSharedData().post.end();
 }
 
 //------------------------------------------------------------------------------------------

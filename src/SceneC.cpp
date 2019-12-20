@@ -10,6 +10,7 @@ void SceneC::setup() {
 	ray[3].load("shader/SceneC/ray.vert", "shader/SceneC/ray3.frag");
 	ray[4].load("shader/SceneC/ray.vert", "shader/SceneC/ray4.frag");
 	lightingShader.load("shader/SceneC/lighting.vert", "shader/SceneC/lighting.frag");
+	sphereShader.load("shader/SceneC/sphere.vert", "shader/SceneC/sphere.frag", "shader/SceneC/sphere.geom");
 
 	createGBuffer();
 	createRenderBuffer();
@@ -20,13 +21,13 @@ void SceneC::setup() {
 	cam.setDistance(5.0);
 
 	// Camera positions
-	camRadiuses.push_back(ofVec3f(30, 30, 30));
-	timeOffsets.push_back(ofVec3f(0.2));
+	camRadiuses.push_back(ofVec3f(5,0,5));
+	timeOffsets.push_back(ofVec3f(0.4));
 	for (int i = 0; i < 3; i++) {
 		ofVec3f radius;
-		radius.x = ofRandom(20.0, 70.0);
-		radius.y = ofRandom(20.0, 70.0);
-		radius.z = ofRandom(20.0, 70.0);
+		radius.x = ofRandom(3.0, 10.0);
+		radius.y = ofRandom(3.0, 10.0);
+		radius.z = ofRandom(3.0, 10.0);
 		camRadiuses.push_back(radius);
 
 		ofVec3f offset;
@@ -59,8 +60,10 @@ void SceneC::setup() {
 	gui.add(showTex.setup("showTex", false));
 	gui.add(isColored.setup("isColored", false));
 	gui.add(isShade.setup("isShade", true));
+	gui.add(isGeometry.setup("isGeometry", false));
 
 	sceneMode = 0;
+	camIdx = 0;
 
 	// lighting Fbo allocate
 	ofFbo::Settings s;
@@ -71,6 +74,11 @@ void SceneC::setup() {
 	s.depthStencilAsTexture = true;
 	s.textureTarget = GL_TEXTURE_2D;
 	lightingFbo.allocate(s);
+
+	for (int i = 0; i < 5; i++) sceneArray[i] = 0;
+
+	// setup geometry
+	sphere = ofIcoSpherePrimitive(1.5, 2).getMesh();
 }
 
 // =============================================================
@@ -110,9 +118,28 @@ void SceneC::draw() {
 
 //--------------------------------------------------------------
 void SceneC::scene1() {
+	float camY = 0;
 	switch (sceneMode) {
 	case 0:
-		cam.setPosition(sin(time) * 5.0, 0.0, cos(time) * 5.0);
+		if (sceneArray[0] == 0) {
+			cam.setPosition(
+				camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x),
+				camY,
+				camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z)
+			);
+		}
+		else if(sceneArray[0] == 1) {
+			cam.setPosition(
+				camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x),
+				camRadiuses[camIdx].z* cos(time * timeOffsets[camIdx].y),
+				camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z)
+			);
+		}
+		else if (sceneArray[0] == 2) {
+			cam.setPosition(
+				0, 0, 10
+			);
+		}
 		cam.lookAt(ofVec3f(0, 0, 0));
 		break;
 	case 1:
@@ -127,44 +154,52 @@ void SceneC::scene1() {
 	lightPos = ofVec3f(-10, -10, 10);
 	glEnable(GL_DEPTH_TEST);
 
-	// Render Geometry to G-Buffer
-	/*gFbo.begin();
-	gFbo.activateAllDrawBuffers();
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ofMatrix4x4 projection, model, view, mvpMatrix;
 
-	cam.begin();
-	ofMatrix4x4 projection = cam.getProjectionMatrix();
-	ofMatrix4x4 model;
-	model.rotate(time * 50.0, 1.0, 0.7, 0.4);
-	ofMatrix4x4 view = ofGetCurrentViewMatrix();
-	ofMatrix4x4 mvpMatrix = model * view * projection;
-	ofMatrix4x4 invMatrix = mvpMatrix.getInverse();
+	if(isGeometry) {
+		// Render Geometry to G-Buffer
+		gFbo.begin();
+		gFbo.activateAllDrawBuffers();
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	gBufferShader.begin();
-	gBufferShader.setUniformMatrix4f("model", model);
-	gBufferShader.setUniformMatrix4f("view", view);
-	gBufferShader.setUniformMatrix4f("peojection", projection);
-	gBufferShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
-	box.draw(OF_MESH_FILL);
-	gBufferShader.end();
+		cam.begin();
+		projection = cam.getProjectionMatrix();
+		model.rotate(time * 50.0, 1.0, 0.7, 0.4);
+		view = ofGetCurrentViewMatrix();
+		mvpMatrix = model * view * projection;
+		sphereShader.begin();
+		sphereShader.setUniformMatrix4f("model", model);
+		sphereShader.setUniformMatrix4f("view", view);
+		sphereShader.setUniformMatrix4f("peojection", projection);
+		sphereShader.setUniformMatrix4f("mvpMatrix", mvpMatrix);
+		sphereShader.setUniform1f("time", time);
+		sphereShader.setUniform1f("volume", getSharedData().volume);
+		sphere.draw(OF_MESH_FILL);
+		sphereShader.end();
 
-	cam.end();
-	gFbo.end();*/
+		cam.end();
+		gFbo.end();
+	}
 
 	// Render ray marching
 	gFbo.begin();
 	gFbo.activateAllDrawBuffers();
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (!isGeometry) {
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
 	cam.begin();
 
-	ofMatrix4x4 projection = cam.getProjectionMatrix();
-	ofMatrix4x4 view = ofGetCurrentViewMatrix();
+	/*ofMatrix4x4 projection = cam.getProjectionMatrix();
+	ofMatrix4x4 view = ofGetCurrentViewMatrix();*/
 
 	ray[sceneMode].begin();
 	ray[sceneMode].setUniform1f("time", time);
 	ray[sceneMode].setUniformMatrix4f("view", view);
+	ray[sceneMode].setUniform1f("volume", getSharedData().volume);
+	ray[sceneMode].setUniform1i("sceneMode", sceneArray[sceneMode]);
 	ray[sceneMode].setUniform2f("resolution", gFbo.getWidth(), gFbo.getHeight());
 	ray[sceneMode].setUniformMatrix4f("projection", projection);
 	ray[sceneMode].setUniform3f("camPos", cam.getGlobalPosition());
@@ -269,13 +304,24 @@ void SceneC::keyPressed(int key) {
 	switch (key) {
 	// Camera change
 	case 'a':
+		camIdx = (int)ofRandom(0, camRadiuses.size());
 		break;
 	// Local Scene change
+	case 's':
+		isColored = !isColored;
+		break;
+	case 'd':
+		isGeometry = !isGeometry;
+		break;
+	case 'f':
+		isShade = !isShade;
+		break;
 	case 'z':
 		sceneMode = 0;
 		break;
 	case 'x':
 		sceneMode = 1;
+		isShade = false;
 		break;
 	case 'c':
 		sceneMode = 2;
@@ -287,8 +333,21 @@ void SceneC::keyPressed(int key) {
 	case 'b':
 		sceneMode = 4;
 		break;
-	case 's':
-		isColored = !isColored;
+	case 'g':
+		sceneArray[sceneMode] = 0;
+		break;
+	case 'h':
+		sceneArray[sceneMode] = 1;
+		break;
+	case 'j':
+		sceneArray[sceneMode] = 2;
+		break;
+	case 'k':
+		sceneArray[sceneMode] = 3;
+		break;
+	case 'l':
+		sceneArray[sceneMode] = 4;
+		break;
 	}
 }
 

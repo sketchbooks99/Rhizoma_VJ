@@ -26,7 +26,7 @@ class SceneC : public itg::ofxState<SharedData> {
 	};
 
 	// Shaders & fbo
-	ofShader rayShader, postShader, lightingShader, gBufferShader, gRenderShader;
+	ofShader rayShader, postShader, lightingShader, gBufferShader, gRenderShader, sphereShader;
 	//ofShader ray2, ray3, ray4;
 	ofShader ray[5];
 	ofFbo renderFbo, gFbo, lightingFbo;
@@ -37,20 +37,20 @@ class SceneC : public itg::ofxState<SharedData> {
 	vector<ofVec3f> timeOffsets;
 
 	ofxPanel gui;
-	ofxToggle isNormal, isDepth, isPosition, isRender, isColored, isShade;
+	ofxToggle isNormal, isDepth, isPosition, isRender, isColored, isShade, isGeometry;
 	ofxToggle showTex;
 
-	bool sceneArray[5][5];
+	int sceneArray[5];
 
 	// GPU Particles
 	int numParticles, textureRes;
 	ofShader compute, renderParticle;
 	ofBufferObject particleBuffer;
-	ofVboMesh particle;
+	ofVboMesh particle, sphere;
 
 	// General parameters
 	float time;
-	int sceneMode;
+	int sceneMode, camIdx;
 	myCamera cam;
 
 	// Geometry

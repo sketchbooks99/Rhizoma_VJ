@@ -384,7 +384,7 @@ void SceneB::keyPressed(int key) {
 	case 'x':
 		sceneMode = 1;
 		break;
-	case 'c':
+	/*case 'c':
 		sceneMode = 2;
 		break;
 	case 'v':
@@ -398,7 +398,7 @@ void SceneB::keyPressed(int key) {
 		break;
 	case 'm':
 		sceneMode = 6;
-		break;
+		break;*/
 	}
 }
 

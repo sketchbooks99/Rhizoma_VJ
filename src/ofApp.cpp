@@ -157,7 +157,7 @@ void ofApp::keyPressed(int key){
 		break;
 	case '3': // ray marching
 		stateMachine.changeState("SceneC");
-		stateMachine.getSharedData().bloom->setEnabled(false);
+		stateMachine.getSharedData().bloom->setEnabled(true);
 		stateMachine.getSharedData().bloom->setStrength(1.0);
 		break;
 	case '4':

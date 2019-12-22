@@ -20,9 +20,9 @@ void ofApp::setup() {
 	stateMachine.getSharedData().volume = 0;
 	ofSoundStreamSettings settings;
 	auto devices = soundStream.getMatchingDevices("default");
-	if (!devices.empty()) {
+	/*if (!devices.empty()) {
 		settings.setInDevice(devices[0]);
-	}
+	}*/
 	settings.setInListener(this);
 	settings.sampleRate = 44100;
 	settings.numOutputChannels = 0;
@@ -153,7 +153,7 @@ void ofApp::keyPressed(int key){
 	case '2':
 		stateMachine.changeState("SceneB");
 		stateMachine.getSharedData().bloom->setEnabled(true);
-		stateMachine.getSharedData().bloom->setStrength(3.5);
+		stateMachine.getSharedData().bloom->setStrength(2.5);
 		break;
 	case '3': // ray marching
 		stateMachine.changeState("SceneC");
@@ -301,5 +301,5 @@ void ofApp::audioIn(ofSoundBuffer & input) {
 	/*smoothedVol *= 0.93;
 	smoothedVol += 0.07 * curVol;*/
 
-	stateMachine.getSharedData().volume = ofMap(curVol, 0, 0.17, 0, 1);
+	stateMachine.getSharedData().volume = ofMap(curVol, 0, 0.6, 0, 1);
 }

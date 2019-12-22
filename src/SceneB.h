@@ -39,6 +39,7 @@ private:
 	float time;
 	ofFbo renderFbo;
 	int sceneMode = 0;
+	int colorMode = 0;
 
 	// boid
 	ofVboMesh piramid, box;
@@ -46,7 +47,7 @@ private:
 	ofTexture posTex, velTex, forceTex;
 	ofBufferObject forceBuffer, dataBuffer, lifeBuffer;
 	vector<Boids> boids;
-	int numFish, texRes;
+	int numFish, texRes, localIdx;
 	vector<ofVec3f> attractorPoses;
 	unsigned int attIdx;
 	ofVec3f wallSize;
@@ -59,5 +60,6 @@ private:
 	ofParameter<float> maxSpeed, maxForce, avoidWallWeight;
 	ofParameter<float> attractWeight;
 	ofParameter<float> fps;
+	ofxToggle isReactive;
 	ofParameterGroup shaderUniforms;
 };

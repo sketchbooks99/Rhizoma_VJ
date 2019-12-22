@@ -89,6 +89,10 @@ float scene1(vec3 p) {
 	for(float i = 0.; i < 4.; i++) {
 		float x = sin(i * TWO_PI / 4.) * 2.0;
 		float z = cos(i * TWO_PI / 4.) * 2.0;
+		if(sceneMode == 1) {
+			x += volume;
+			z += volume;
+		}
 		float sp1 = sphere(p + vec3(x, 0., z), 0.7);
 		sp = smoothMin(sp, sp1, 5.0);
 	}
@@ -96,12 +100,20 @@ float scene1(vec3 p) {
 }
 
 float scene2(vec3 p) {
-	vec3 trans = vec3(sin(time), cos(time * 1.589), cos(time * 1.23)) * 2.0;
-	float sp = sphere(p + trans, 1.0 + volume);
-	for(float i = 0.; i < 4.; i++) {
-		float x = sin(time * i * 1.46) * 2.0;
-		float y = cos(time * i * 1.28) * 2.0;
-		float z = cos(time * i * 0.87) * 2.0;
+	float iter = 4.;
+	float time0 = time;
+	if(sceneMode == 3) {
+		iter = 8.;
+		time0 *= 0.5;
+	}
+	float radius = sceneMode == 2 ? 2. : 3.;
+	float size = sceneMode == 2 ? 1.0 : 2.0;
+	vec3 trans = vec3(sin(time0), cos(time0 * 1.589), cos(time0 * 1.23)) * 2.0;
+	float sp = sphere(p + trans, size + volume);
+	for(float i = 0.; i < iter; i++) {
+		float x = sin(time * i * 1.46) * radius;
+		float y = cos(time * i * 1.28) * radius;
+		float z = cos(time * i * 0.87) * radius;
 		float sp1 = sphere(p + vec3(x, y, z), (sin(time + i) + 3.0) * 0.3 + volume);
 		sp = smoothMin(sp, sp1, 5.0);
 	}
@@ -118,9 +130,8 @@ float scene3(vec3 p) {
 }
 
 float distanceFunc(vec3 p) {
-	if(sceneMode == 0) return scene1(p);
-	else if(sceneMode == 1) return scene2(p);
-	else if(sceneMode == 2) return scene3(p);
+	if(sceneMode == 0 || sceneMode == 1) return scene1(p);
+	else if(sceneMode == 2 || sceneMode == 3) return scene2(p);
 }
 
 vec3 getNormal(vec3 p) {
@@ -172,10 +183,8 @@ void main() {
 		// gColor = vec4(0.3, 0.6, 0.5, 1.0);
 		float sin_val = sin(length(rPos.xz) * 20.0 + time * 5.0);
 		vec3 color;
-		if(sceneMode == 0 || sceneMode == 1) {
+		if(sceneMode <= 3) {
 			color = vec3(1.0) * sin_val;
-		} else if(sceneMode == 2){
-			color = vec3(1.0);
 		} else if(sceneMode == 3) {
 			color = vec3(0.05) + mod(rPos.z * 0.2 + time * 3.0, 2.0) * 0.6;
 		}

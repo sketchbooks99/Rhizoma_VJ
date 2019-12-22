@@ -3,6 +3,7 @@
 uniform mat4 modelViewProjectionMatrix;
 uniform vec3 scale;
 uniform int numFish;
+uniform int sceneMode;
 
 in vec4 position;
 
@@ -56,6 +57,10 @@ void main() {
     vec3 pos = (obj2world * position).xyz;// + boid.pos;
 
     gl_Position = vec4(pos, 1.0);
-    // geomColor = vec4(hsb2rgb(vec3(float(gl_InstanceID) / numFish, 1.0, 1.0)), 1.0);
-    geomColor = vec4(vec3(0.2, 0.6, 0.6), 1.0);
+    if(sceneMode == 0) 
+        geomColor = vec4(vec3(0.2, 0.6, 0.6), 1.0);
+    if(sceneMode == 1)
+        geomColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+    if(sceneMode == 2)
+        geomColor = vec4(hsb2rgb(vec3(float(gl_InstanceID) / numFish, 1.0, 1.0)), 1.0);
 }

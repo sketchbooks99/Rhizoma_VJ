@@ -35,6 +35,7 @@ class SceneC : public itg::ofxState<SharedData> {
 
 	vector<ofVec3f> camRadiuses;
 	vector<ofVec3f> timeOffsets;
+	vector<ofVec3f> rayCams;
 
 	ofxPanel gui;
 	ofxToggle isNormal, isDepth, isPosition, isRender, isColored, isShade, isGeometry;

@@ -71,7 +71,7 @@ void SceneA::setup() {
 	time = getSharedData().time;
 	camIdx = 0;
 	attIdx = 0;
-	sceneMode = 4;
+	sceneMode = 0;
 	cam.setDistance(150);
 
 	camRadiuses.push_back(ofVec3f(60.0));
@@ -259,7 +259,7 @@ void SceneA::soundScene() {
 	}
 	for (int i = 0; i < 20; i++) {
 		ofSetColor(ofFloatColor(fmod(time * 3.0 + i * 0.01, 1.0)));
-		ofDrawRectangle(i * 100, getSharedData().left[i] * 800, 50, getSharedData().left[i] * 5000.0f);
+		ofDrawRectangle(i * 100, getSharedData().left[i] * 800, 30, getSharedData().left[i] * 5000.0f);
 	}
 	ofPopMatrix();
 }
@@ -482,13 +482,13 @@ void SceneA::scene5() {
 		}
 	}
 
+	glDisable(GL_DEPTH_TEST);
+	cam.end();
+
 	if (isLayer)
 		soundScene();
 
-	glDisable(GL_DEPTH_TEST);
-	cam.end();
 	renderFbo.end();
-
 	getSharedData().post.begin();
 	renderFbo.draw(0, 0);
 	getSharedData().post.end();
@@ -547,7 +547,7 @@ void SceneA::keyPressed(int key) {
 	case 'v':  // pop up cube
 		sceneMode = 3;
 		isColored = false;
-		getSharedData().bloom->setStrength(2.0);
+		getSharedData().bloom->setStrength(1.5);
 		break;
 	case 'b':  // room
 		sceneMode = 4;

@@ -16,6 +16,7 @@ uniform float farClip;
 uniform float nearClip;
 uniform bool isColored;
 uniform vec3 edgeColor;
+uniform int sceneMode;
 
 in vec2 vTexCoord;
 
@@ -223,9 +224,13 @@ Object distanceFunc(vec3 p) {
     vec3 bx_col = vec3(1., 0., 0.);
     Object obj;
     obj.dist = dist;
-    vec3 col = vec3(.05) + mod(q.z * 0.2 + time * 3.0, 2.0) * 0.6;
+    vec3 col = vec3(.05) + mod(q.z * 0.2 + time * 1.5, 1.0) * 0.6;
     obj.color = col;
-    obj.edge = vec3(hsb2rgb(vec3(mod(time, 1.0), 1.0, 1.0)));
+    if(sceneMode == 1) {
+        obj.edge = vec3(0.3, 1.5, 1.5);
+    } else if(sceneMode == 2) {
+        obj.edge = vec3(hsb2rgb(vec3(mod(time, 1.0), 1.0, 1.0)));
+    }
     return obj;
 }
 
@@ -261,7 +266,7 @@ void main() {
     vec3 rPos = cPos;
     Object obj;
     obj.dist = 0.0;
-    for(int i=0; i<128; i++) {
+    for(int i=0; i<99; i++) {
         obj = distanceFunc(rPos);
         rLen += obj.dist;
         rPos = cPos + ray * rLen;
@@ -277,7 +282,7 @@ void main() {
 
        float max_dif = .9;
        
-        if(isColored) {
+        if(sceneMode > 0) {
             if(abs(dot(normal, dif_x)) < max_dif ||
             abs(dot(normal, dif_y)) < max_dif || 
             abs(dot(normal, dif_z)) < max_dif) {

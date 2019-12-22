@@ -16,6 +16,7 @@ uniform float farClip;
 uniform float nearClip;
 uniform bool isColored;
 uniform vec3 edgeColor;
+uniform int sceneMode;
 
 in vec2 vTexCoord;
 

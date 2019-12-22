@@ -12,6 +12,7 @@ uniform vec3 camUp;
 uniform float fov;
 uniform float farClip;
 uniform float nearClip;
+uniform float sceneMode;
 
 in vec2 vTexCoord;
 
@@ -186,7 +187,7 @@ void main() {
     Object obj;
     float rLen = 0.0;
     vec3 rPos = cPos;
-    for(int i = 0; i < 128; i++) {
+    for(int i = 0; i < 99; i++) {
         obj = distanceFunc(rPos);
         rLen += obj.dist;
         rPos = cPos + ray * rLen;

@@ -12,6 +12,7 @@ uniform vec3 camUp;
 uniform float fov;
 uniform float farClip;
 uniform float nearClip;
+uniform int sceneMode;
 
 in vec2 vTexCoord;
 
@@ -141,14 +142,16 @@ Object distanceFunc(vec3 p) {
     float bx = box(bx_p, 0.2);
     vec3 q = p;
     // q = twist(p, 0.1);
-    // q = rotate(q, time * 0.3, vec3(0.0, 0.0, 1.0));
+    if(sceneMode == 1) q = rotate(q, time * 0.3, vec3(0.0, 0.0, 1.0));
     q.yx = foldRotate(q.yx, 20.0);
     q -= vec3(0.0, 0.0, time * 3.0);
     float back_scene = max(three_bar(repeat(q, 1.5)), -three_tube(repeat(q, 0.3)));
     Object obj;
     obj.dist = min(bx, back_scene);
     float d = length(q - vec3(0.0, 0.0, q.z));
-    vec3 back_col = d  * vec3(.3) - mod(q.z * 0.1 + time * 3.0, 2.0) * vec3(1.0, 1.0, 1.0);
+    vec3 back_col = d * vec3(.3) - mod(q.z * 0.1 + time * 3.0, 2.0) * vec3(1.0, 1.0, 1.0);
+    vec3 blue = d * vec3(.2) - mod(q.z * 0.1 + time * 2.0, 1.0) * vec3(0.6, 0.0,0.0);
+    if(sceneMode == 2) back_col -= blue;
     vec3 bx_col = vec3(0.1,.5, 0.6);
     obj.color = bx < back_scene ? bx_col : back_col;
     // obj.color -= wave;
@@ -186,7 +189,7 @@ void main() {
     Object obj;
     float rLen = 0.0;
     vec3 rPos = cPos;
-    for(int i = 0; i < 128; i++) {
+    for(int i = 0; i < 99; i++) {
         obj = distanceFunc(rPos);
         rLen += obj.dist;
         rPos = cPos + ray * rLen;

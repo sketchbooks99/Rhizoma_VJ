@@ -7,13 +7,14 @@ int main( ){
 	ofGLFWWindowSettings s;
 
 	s.setGLVersion(4, 5);
-	s.setSize(3840, 2160);
+	s.setSize(2560, 1440);
 	//s.setSize(1920, 1080);
-	s.setPosition(ofVec2f(1920, 0));
+	s.setPosition(ofVec2f(2400, 0));
 	s.monitor = 1;
 	//s.windowMode = OF_FULLSCREEN;
-	s.resizable = true;
-	s.decorated = true;
+	// s.multiMonitorFullScreen = true;
+	s.resizable = false;
+	s.decorated = false;
 	shared_ptr<ofAppBaseWindow> subWindow = ofCreateWindow(s);
 	
 
@@ -22,7 +23,7 @@ int main( ){
 	s.setPosition(ofVec2f(0, 0));
 	s.resizable = true;
 	//s.windowMode = OF_FULLSCREEN;
-	s.monitor = 0;
+	//s.monitor = 0;
 	s.shareContextWith = subWindow;
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(s);
 

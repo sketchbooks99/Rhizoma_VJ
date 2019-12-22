@@ -47,11 +47,19 @@ private:
 
 class Trail {
 public:
+	struct data {
+		ofVec4f pos;
+		ofVec4f vel;
+	};
     void init(int _num, int _length);
     void createBuffers(int _num, int _length);
     void draw(ofPolyRenderMode mode = OF_MESH_FILL);
     void debugTexture(int x, int y);
     void update();
+
+	void loadCompute(std::string _compute) {
+		compute.loadCompute(_compute);
+	}
     
     void loadVelocityShader(std::string vert, std::string frag) {
         updateVel.load(vert, frag);
@@ -96,9 +104,10 @@ public:
 private:
     float num, length, width, speed, size;
     ofVec3f color1, color2;
-    pingPongBuffer velBuffer, posBuffer;
+    //pingPongBuffer velBuffer, posBuffer;
+	ofBufferObject dataBuffer;
     ofVboMesh mesh;
-    ofShader render, updateVel, updatePos;
+    ofShader render, updateVel, updatePos, compute;
     ofVec3f camPos;
 };
 

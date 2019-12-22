@@ -127,9 +127,12 @@ void SceneB::setup() {
 	shaderUniforms.add(attractWeight.set("attractWeight", 10.0, 1.0, 30.0));
 	gui.add(shaderUniforms);
 	gui.add(fps.set("fps", 60, 0, 200));
+	gui.add(isReactive.setup("isReactive", false));
 
 	// Bloom Enable
 	getSharedData().bloom->setEnabled(true);
+
+	localIdx = 0;
 }
 
 // =========================================================================================
@@ -186,7 +189,7 @@ void SceneB::draw() {
 
 // =========================================================================================
 void SceneB::scene1() {
-	if (getSharedData().volume > 0.7) {
+	if (getSharedData().volume > 0.7 && isReactive) {
 		attIdx = (int)ofRandom(0, attractorPoses.size());
 	}
 
@@ -232,7 +235,7 @@ void SceneB::scene1() {
 
 	
 	// Change camera position
-	cam.setPosition(sin(time * 0.2) * wallSize.x * 0.5, cos(time * 0.4) * wallSize.y * 0.5, cos(time * 0.3) * wallSize.z * 0.5);
+	cam.setPosition(sin(time * 0.2) * wallSize.x, cos(time * 0.4) * wallSize.y, cos(time * 0.3) * wallSize.z);
 	//cam.lookAt(ofVec3f(0, 0, 0));
 	cam.lookAt(attractorPoses[attIdx]);
 
@@ -256,9 +259,10 @@ void SceneB::scene1() {
 	instancingShader.begin();
 	instancingShader.setUniformTexture("posTex", posTex, 0);
 	instancingShader.setUniform1i("isInvert", getSharedData().invert->getEnabled());
-	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.7, getSharedData().volume * 10.0));
+	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(0.7f, (float)getSharedData().volume));
 	instancingShader.setUniform1i("numFish", numFish);
 	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
+	instancingShader.setUniform1i("sceneMode", localIdx);
 	piramid.drawInstanced(OF_MESH_FILL, numFish);
 	instancingShader.end();
 
@@ -318,9 +322,10 @@ void SceneB::scene2() {
 	instancingShader.begin();
 	instancingShader.setUniformTexture("posTex", posTex, 0);
 	instancingShader.setUniform1i("isInvert", getSharedData().invert->getEnabled());
-	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(1.0, getSharedData().volume * 10.0));
+	instancingShader.setUniform3f("scale", ofVec3f(1,1,3) * max(1.0, getSharedData().volume * 2.0));
 	instancingShader.setUniform1i("numFish", numFish);
 	instancingShader.setUniformMatrix4f("invMatrix", invMatrix);
+	instancingShader.setUniform1i("sceneMode", localIdx);
 	piramid.drawInstanced(OF_MESH_FILL, numFish);
 	instancingShader.end();
 
@@ -383,6 +388,15 @@ void SceneB::keyPressed(int key) {
 		break;
 	case 'x':
 		sceneMode = 1;
+		break;
+	case 'g':
+		localIdx = 0;
+		break;
+	case 'h':
+		localIdx = 1;
+		break;
+	case 'j':
+		localIdx = 2;
 		break;
 	/*case 'c':
 		sceneMode = 2;

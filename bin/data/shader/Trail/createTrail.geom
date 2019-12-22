@@ -4,6 +4,15 @@
 
 #define PI 3.141529
 
+struct Trail {
+    vec4 pos;
+    vec4 vel;
+};
+
+layout(std430, binding=0) buffer trail {
+    Trail t[];
+};
+
 uniform sampler2DRect posTex;
 uniform int trailLength;
 uniform mat4 modelViewProjectionMatrix;
@@ -43,9 +52,10 @@ void main() {
     for(int i=0; i<trailLength; i++) {
         vec3 dir = vec3(0.0);
         vec3 sideDir = vec3(0.0);
-        vec3 pos = texture(posTex, vertex[0].texcoord + vec2(float(i), 0.0)).xyz * size;
+        vec3 pos = 
+        vec3 pos = t[vertex[0].id + i]).xyz * size;
         if(i < trailLength - 1) {
-            dir = pos - texture(posTex, vertex[0].texcoord + vec2(float(i+1), 0.0)).xyz * size;
+            dir = pos - t[vertex[0].id + (i+1)].pos.xyz * size;// texture(posTex, vertex[0].texcoord + vec2(float(i+1), 0.0)).xyz * size;
             vec3 toCamDir = normalize(camPos - dir);
             sideDir = normalize(cross(toCamDir, dir));
         }

@@ -64,6 +64,7 @@ void main() {
 	vel.y += snoise(vec4(pos.x * scale, pos.y * scale, pos.z * scale, 1.2814 * time * timestep));
 	vel.z += snoise(vec4(pos.x * scale, pos.y * scale, pos.z * scale, 2.5564 * time * timestep));
 
+
     pos += vel * 0.5;
 
     par.pos = pos;

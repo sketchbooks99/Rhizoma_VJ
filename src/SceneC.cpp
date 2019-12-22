@@ -59,8 +59,8 @@ void SceneC::setup() {
 	gui.setPosition(getSharedData().gui.getWidth() + 10, 10);
 	gui.add(showTex.setup("showTex", false));
 	gui.add(isColored.setup("isColored", false));
-	gui.add(isShade.setup("isShade", true));
 	gui.add(isGeometry.setup("isGeometry", false));
+	gui.add(isShade.setup("isShade", true));
 
 	sceneMode = 0;
 	camIdx = 0;
@@ -79,6 +79,12 @@ void SceneC::setup() {
 
 	// setup geometry
 	sphere = ofIcoSpherePrimitive(1.5, 2).getMesh();
+
+	rayCams.push_back(ofVec3f(0, 0, 10));
+	rayCams.push_back(ofVec3f(-1, 0, -10));
+	rayCams.push_back(ofVec3f(2, 2, 10));
+
+	sceneMode = 0;
 }
 
 // =============================================================
@@ -121,33 +127,27 @@ void SceneC::scene1() {
 	float camY = 0;
 	switch (sceneMode) {
 	case 0:
-		if (sceneArray[0] == 0) {
+		if (sceneArray[0] == 0 || sceneArray[0] == 1) {
 			cam.setPosition(
 				camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x),
 				camY,
 				camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z)
 			);
 		}
-		else if(sceneArray[0] == 1) {
+		else if(sceneArray[0] == 2 || sceneArray[0] == 3) {
 			cam.setPosition(
 				camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x),
 				camRadiuses[camIdx].z* cos(time * timeOffsets[camIdx].y),
 				camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z)
 			);
 		}
-		else if (sceneArray[0] == 2) {
-			cam.setPosition(
-				0, 0, 10
-			);
-		}
+
 		cam.lookAt(ofVec3f(0, 0, 0));
 		break;
 	case 1:
-		cam.setPosition(0, 0, 10);
-		cam.lookAt(ofVec3f(0, 0, 0));
-		break;
 	case 2:
-		cam.setPosition(0, 0, 10);
+		if (camIdx <= 2) cam.setPosition(rayCams[camIdx]);
+		else cam.setPosition(ofVec3f(sin(time * 0.33), cos(time * 0.45), 10));
 		cam.lookAt(ofVec3f(0, 0, 0));
 		break;
 	}
@@ -156,7 +156,7 @@ void SceneC::scene1() {
 
 	ofMatrix4x4 projection, model, view, mvpMatrix;
 
-	if(isGeometry) {
+	if(isGeometry && sceneMode > 0) {
 		// Render Geometry to G-Buffer
 		gFbo.begin();
 		gFbo.activateAllDrawBuffers();
@@ -186,7 +186,7 @@ void SceneC::scene1() {
 	gFbo.begin();
 	gFbo.activateAllDrawBuffers();
 
-	if (!isGeometry) {
+	if (!isGeometry || sceneMode == 0) {
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -208,6 +208,7 @@ void SceneC::scene1() {
 	ray[sceneMode].setUniform1f("fov", cam.getFov());
 	ray[sceneMode].setUniform1f("farClip", cam.getFarClip());
 	ray[sceneMode].setUniform1f("nearClip", cam.getNearClip());
+	ray[sceneMode].setUniform1i("sceneMode", sceneArray[sceneMode]);
 
 	quad.draw(OF_MESH_FILL);
 
@@ -318,6 +319,7 @@ void SceneC::keyPressed(int key) {
 		break;
 	case 'z':
 		sceneMode = 0;
+		isShade = true;
 		break;
 	case 'x':
 		sceneMode = 1;

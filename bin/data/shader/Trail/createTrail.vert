@@ -1,9 +1,17 @@
 #version 450
 
 uniform mat4 modelViewProjectionMatrix;
-uniform sampler2DRect posTex;
 uniform int trailLength;
 uniform vec2 texSize;
+
+struct Trail {
+    vec4 pos;
+    vec4 vel;
+};
+
+layout(std430, binding=0) buffer trail {
+    Trail t[];
+};
 
 in vec3 normal;
 in vec2 texcoord;
@@ -31,8 +39,7 @@ out Vertex {
 
 void main() {
     if(gl_VertexID == 0) {
-        vec2 coord = vec2(gl_VertexID, gl_InstanceID);
-        vec3 pos = texture(posTex, coord).xyz * 100.0;
+        vec3 pos = t[gl_InstanceID * trailLength].pos.xyz * 100.0;
         vec3 posNext = texture(posTex, coord + vec2(1.0, 0.0)).xyz * 100.0;
         vertex.pos = pos;
         vertex.id = gl_InstanceID;

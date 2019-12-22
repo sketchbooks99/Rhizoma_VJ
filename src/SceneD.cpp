@@ -16,21 +16,6 @@ void SceneD::setup() {
 	boxelShader.load("shader/SceneD/boxel.vert", "shader/SceneD/boxel.frag", "shader/SceneD/boxel.geom");
 	
 	// trail setup
-	ofEnableArbTex();
-	numTrail = 4096;
-	trailLength = 20;
-	trail.init(numTrail, trailLength);
-	trail.createMesh(trail.getLength());
-	trail.createBuffers(trail.getNum(), trail.getLength());
-	trail.loadVelocityShader("shader/Trail/passthru.vert", "shader/Trail/velUpdate.frag");
-	trail.loadPositionShader("shader/Trail/passthru.vert", "shader/Trail/posUpdate.frag");
-	trail.loadRenderShader("shader/Trail/createTrail.vert", "shader/Trail/createTrail.frag", "shader/Trail/createTrail.geom");
-	//ofDisableArbTex();
-
-	trailSphere = ofSpherePrimitive(300, 32).getMesh();
-	for (int i = 0; i < trailSphere.getVertices().size(); i++) {
-		trailSphere.addColor(ofFloatColor(0.0, 0.0, 0.0, 1.0));
-	}
 	size = 100.0;
 
 	sceneMode = 0;
@@ -42,8 +27,7 @@ void SceneD::setup() {
 	manSphere = ofIcoSpherePrimitive(2, 5).getMesh();
 	string filename = "bvh01-09/05/MMD_Lamb.bvh";
 	bvh = ofxBvh(filename);
-	bvh.play();
-
+	//bvh.play();
 
 	// Camera positions
 	ofVec3f wallSize = ofVec3f(1000.0);
@@ -112,6 +96,7 @@ void SceneD::scene1() {
 	boxel.draw();
 	boxelShader.end();
 	ofPopMatrix();
+	
 
 	glDisable(GL_DEPTH_TEST);
 	cam.end();
@@ -124,6 +109,13 @@ void SceneD::scene1() {
 
 //--------------------------------------------------------------
 void SceneD::scene2() {
+
+	cam.setPosition(
+		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x),
+		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y),
+		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z)
+	);
+	cam.lookAt(ofVec3f(0, 0, 0));
 
 	renderFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -158,6 +150,12 @@ void SceneD::scene2() {
 }
 //--------------------------------------------------------------
 void SceneD::scene3() {
+	cam.setPosition(
+		camRadiuses[camIdx].x * sin(time * timeOffsets[camIdx].x),
+		camRadiuses[camIdx].y * cos(time * timeOffsets[camIdx].y),
+		camRadiuses[camIdx].z * cos(time * timeOffsets[camIdx].z)
+	);
+	cam.lookAt(ofVec3f(0, 0, 0));
 	renderFbo.begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//ofBackground(ofFloatColor(0.3, 1.0));
@@ -177,10 +175,6 @@ void SceneD::scene3() {
 	ofRotateXDeg(90);
 	plane.draw();
 	ofPopMatrix();
-
-	boxelShader.setUniform3f("inColor", .2, .7, .3);
-	boxelShader.setUniform3f("outColor", .2, .7, .3);
-	boxelShader.setUniform3f("spColor", .45, .3, .18);
 
 	ofPushMatrix();
 	ofTranslate(0, 1000, 0);
@@ -235,6 +229,7 @@ void SceneD::scene4() {
 void SceneD::keyPressed(int key) {
 	switch (key) {
 	case 'a':
+		camIdx = (int)ofRandom(0, camRadiuses.size());
 		break;
 		// Local Scene change
 	case 'z':
